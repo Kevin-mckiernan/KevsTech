@@ -3471,6 +3471,7 @@ input, select, textarea {
 			#intro {
 				padding: 2rem 2rem 1rem 2rem ;
 				min-height: auto;
+				justify-content: flex-start;
 			}
 
 				#intro h1 {
@@ -3593,7 +3594,12 @@ input, select, textarea {
 		@media screen and (max-width: 736px) {
 
 			#header {
-				padding-bottom: 3rem;
+				padding-bottom: 2rem;
+				height: 6rem;
+			}
+
+			#intro + #header {
+				margin-top: -6rem;
 			}
 
 				#header .logo {
