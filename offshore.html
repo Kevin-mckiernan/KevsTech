@@ -27,7 +27,7 @@
   a:hover { color: var(--accent-strong); border-bottom-color: var(--accent-strong); }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 32px; }
 
-  .topbar { padding: 28px 0 0; }
+  .topbar { padding: 28px 0 0; padding-top: max(28px, env(safe-area-inset-top, 28px)); }
   .topbar-inner { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
   .topbar-inner .brand { color: var(--accent); border: none; padding: 0; }
 
@@ -118,11 +118,15 @@
   footer .foot-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 
   @media (max-width: 560px) {
+    .wrap { padding: 0 20px; }
+    .topbar { padding-top: max(20px, env(safe-area-inset-top, 20px)); }
     .week-strip { grid-template-columns: repeat(4, 1fr); }
     .factors-grid { grid-template-columns: 1fr; }
     .cond-grid { grid-template-columns: 1fr 1fr; }
+    .hero { padding: 40px 0 24px; }
+    footer { padding-bottom: max(32px, env(safe-area-inset-bottom, 32px)); }
   }
-  @media (max-width: 380px) { .wrap { padding: 0 18px; } }
+  @media (max-width: 380px) { .wrap { padding: 0 16px; } }
 </style>
 </head>
 <body>
@@ -433,7 +437,7 @@ function render() {
 }
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const CACHE_TTL = 30 * 60 * 1000;
 function cacheKey(lat, lon) { return `offshore_${lat}_${lon}`; }
 function cacheGet(lat, lon) {
   try {
