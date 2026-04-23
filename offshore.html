@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offshore Forecast — Kevstech</title>
+<meta name="description" content="Florida offshore fishing forecast — waves, wind, pressure, solunar times, and go/no-go by departure port.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 20 L90 50 C90 72 72 88 50 95 C28 88 10 72 10 50 L10 20 Z' fill='%238a6f3a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f3; --surface: #f3efe4; --ink: #1a1a1a; --ink-soft: #3a3a3a;
+    --ink-muted: #5a5a5a; --ink-faint: #8a8275; --rule: #d4ccb8;
+    --accent: #8a6f3a; --accent-strong: #6d5628;
+    --go: #3a6e47; --go-bg: #eef5f0;
+    --marginal: #7a5c1a; --marginal-bg: #fdf5e4;
+    --nogo: #8a3a3a; --nogo-bg: #f9eeee;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 1px; transition: color .15s, border-color .15s; }
+  a:hover { color: var(--accent-strong); border-bottom-color: var(--accent-strong); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 32px; }
+
+  .topbar { padding: 28px 0 0; }
+  .topbar-inner { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
+  .topbar-inner .brand { color: var(--accent); border: none; padding: 0; }
+
+  .hero { padding: 52px 0 28px; }
+  .eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
+  .hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 6vw, 48px); line-height: 1.05; letter-spacing: -1px; margin: 0 0 10px; }
+  .hero .lede { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--ink-muted); margin: 0 0 22px; }
+  .hero-rule { width: 48px; height: 1px; background: var(--rule); margin: 0 0 22px; }
+
+  /* Location picker */
+  .location-picker { margin-bottom: 28px; }
+  .location-picker > label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 14px; }
+  .coast-group { margin-bottom: 16px; }
+  .coast-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .coast-label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .loc-options { display: flex; flex-wrap: wrap; gap: 6px; }
+  .loc-btn { font-family: var(--sans); font-size: 12px; padding: 6px 12px; background: transparent; border: 1px solid var(--rule); color: var(--ink-muted); cursor: pointer; transition: all .15s; border-radius: 2px; white-space: nowrap; }
+  .loc-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .loc-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  /* Boat selector */
+  .boat-selector { margin-bottom: 32px; }
+  .boat-selector label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+  .boat-options { display: flex; flex-wrap: wrap; gap: 6px; }
+  .boat-btn { font-family: var(--sans); font-size: 12px; padding: 6px 12px; background: transparent; border: 1px solid var(--rule); color: var(--ink-muted); cursor: pointer; transition: all .15s; border-radius: 2px; }
+  .boat-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .boat-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  .divider { display: flex; align-items: center; gap: 16px; margin: 40px 0 22px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-faint); }
+  .divider::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .divider-sub { font-size: 12px; color: var(--ink-faint); margin-left: 4px; font-style: italic; letter-spacing: 0; text-transform: none; }
+
+  .status-block { margin-bottom: 28px; }
+  .status-badge { display: inline-flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 2px; font-family: var(--serif); font-size: 23px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 8px; }
+  .status-badge .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .status-go { background: var(--go-bg); color: var(--go); } .status-go .dot { background: var(--go); }
+  .status-marginal { background: var(--marginal-bg); color: var(--marginal); } .status-marginal .dot { background: var(--marginal); }
+  .status-nogo { background: var(--nogo-bg); color: var(--nogo); } .status-nogo .dot { background: var(--nogo); }
+  .status-reason { font-size: 13px; color: var(--ink-muted); }
+
+  .cond-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 8px; }
+  .cond-cell { background: var(--bg); padding: 15px 17px; }
+  .cond-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+  .cond-value { font-family: var(--serif); font-size: 25px; font-weight: 400; line-height: 1; color: var(--ink); margin-bottom: 3px; }
+  .cond-unit { font-size: 12px; color: var(--ink-muted); }
+  .cond-sub { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+
+  .factors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  .factor-card { background: var(--surface); padding: 15px 17px; border-radius: 2px; }
+  .factor-title { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 7px; }
+  .factor-value { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--ink); margin-bottom: 3px; line-height: 1.2; }
+  .factor-note { font-size: 12px; color: var(--ink-muted); line-height: 1.4; }
+  .factor-good { color: var(--go); } .factor-mid { color: var(--marginal); } .factor-bad { color: var(--nogo); }
+
+  .rain-bars { display: flex; align-items: flex-end; gap: 3px; height: 36px; margin: 7px 0 3px; }
+  .rain-bar { flex: 1; background: #8aadca; border-radius: 1px 1px 0 0; min-height: 2px; }
+  .rain-labels { display: flex; gap: 3px; }
+  .rain-label { flex: 1; font-size: 9px; color: var(--ink-faint); text-align: center; }
+  .moon-icon { font-size: 24px; line-height: 1; margin-bottom: 3px; }
+  .solunar-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 7px; }
+  .solunar-pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--go-bg); color: var(--go); }
+  .solunar-pill.minor { background: var(--marginal-bg); color: var(--marginal); }
+
+  .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+  .day-cell { text-align: center; padding: 9px 3px; border-radius: 2px; }
+  .day-name { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 5px; }
+  .day-status { font-size: 9px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+  .day-waves { font-size: 11px; color: var(--ink-muted); margin-top: 4px; line-height: 1.3; }
+  .day-rain { font-size: 10px; color: #5a7f9a; margin-top: 2px; }
+  .day-go { background: var(--go-bg); } .day-go .day-status { color: var(--go); }
+  .day-marginal { background: var(--marginal-bg); } .day-marginal .day-status { color: var(--marginal); }
+  .day-nogo { background: var(--nogo-bg); } .day-nogo .day-status { color: var(--nogo); }
+
+  .explainer { border-top: 1px solid var(--rule); padding-top: 22px; margin-bottom: 40px; }
+  .explainer h3 { font-family: var(--serif); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  .explainer p { font-size: 13px; color: var(--ink-soft); margin: 0 0 8px; max-width: 560px; }
+  .threshold-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 10px; margin-top: 14px; }
+  .threshold-card { background: var(--surface); padding: 11px 13px; border-radius: 2px; }
+  .threshold-title { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 7px; }
+  .threshold-row { font-size: 12px; color: var(--ink-soft); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .t-go { color: var(--go); font-weight: 500; } .t-marginal { color: var(--marginal); font-weight: 500; } .t-nogo { color: var(--nogo); font-weight: 500; }
+
+  .loading { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-muted); padding: 28px 0; }
+  .error-msg { font-size: 13px; color: var(--nogo); background: var(--nogo-bg); padding: 13px 17px; border-radius: 2px; }
+  .foot-note { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+
+  footer { padding: 36px 0 32px; margin-top: 28px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--ink-faint); letter-spacing: 1px; }
+  footer .foot-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+
+  @media (max-width: 560px) {
+    .week-strip { grid-template-columns: repeat(4, 1fr); }
+    .factors-grid { grid-template-columns: 1fr; }
+    .cond-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 380px) { .wrap { padding: 0 18px; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-inner">
+    <a href="index.html" class="brand">← Kevstech</a>
+    <span>Florida offshore forecast</span>
+  </div>
+</div>
+
+<main>
+  <section class="hero wrap">
+    <div class="eyebrow">Offshore forecast · Florida</div>
+    <h1>Can I go offshore this week?</h1>
+    <p class="lede">Pick your departure port and boat size. Waves, wind, pressure, rain, and solunar windows — updated hourly.</p>
+    <div class="hero-rule"></div>
+
+    <div class="location-picker">
+      <label>Departure port</label>
+
+      <div class="coast-group">
+        <div class="coast-label">Atlantic coast</div>
+        <div class="loc-options" id="atlantic-locs"></div>
+      </div>
+
+      <div class="coast-group">
+        <div class="coast-label">Florida Keys</div>
+        <div class="loc-options" id="keys-locs"></div>
+      </div>
+
+      <div class="coast-group">
+        <div class="coast-label">Gulf coast</div>
+        <div class="loc-options" id="gulf-locs"></div>
+      </div>
+    </div>
+
+    <div class="boat-selector">
+      <label>My boat length</label>
+      <div class="boat-options">
+        <button class="boat-btn" data-length="18">18 ft</button>
+        <button class="boat-btn" data-length="21">21 ft</button>
+        <button class="boat-btn active" data-length="24">24 ft</button>
+        <button class="boat-btn" data-length="27">27 ft</button>
+        <button class="boat-btn" data-length="30">30 ft</button>
+        <button class="boat-btn" data-length="34">34 ft</button>
+        <button class="boat-btn" data-length="40">40 ft+</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="divider">Today's conditions <span class="divider-sub" id="active-location-label"></span></div>
+    <div id="today-content"><div class="loading">Fetching conditions…</div></div>
+  </section>
+
+  <section class="wrap">
+    <div class="divider">Fishing factors</div>
+    <div id="fishing-content"><div class="loading">Loading fishing data…</div></div>
+  </section>
+
+  <section class="wrap">
+    <div class="divider">This week</div>
+    <div id="week-content"><div class="loading">Loading forecast…</div></div>
+    <p class="foot-note" id="updated-at"></p>
+  </section>
+
+  <section class="wrap">
+    <div class="divider">How this works</div>
+    <div class="explainer">
+      <h3>The formulas behind the forecast</h3>
+      <p>Go/no-go uses three factors — worst one wins. Fishing quality is layered on using barometric pressure trend, solunar theory, and UV index. Coordinates are set ~10–15 NM offshore for each port.</p>
+      <div class="threshold-grid">
+        <div class="threshold-card">
+          <div class="threshold-title">Period ratio (s ÷ ft)</div>
+          <div class="threshold-row">Go <span class="t-go">≥ 3×</span></div>
+          <div class="threshold-row">Marginal <span class="t-marginal">2–3×</span></div>
+          <div class="threshold-row">No-go <span class="t-nogo">&lt; 2×</span></div>
+        </div>
+        <div class="threshold-card">
+          <div class="threshold-title">Wave vs. boat length</div>
+          <div class="threshold-row">Go <span class="t-go">&lt; 20%</span></div>
+          <div class="threshold-row">Marginal <span class="t-marginal">20–30%</span></div>
+          <div class="threshold-row">No-go <span class="t-nogo">&gt; 30%</span></div>
+        </div>
+        <div class="threshold-card">
+          <div class="threshold-title">Wind speed</div>
+          <div class="threshold-row">Go <span class="t-go">&lt; 10 kt</span></div>
+          <div class="threshold-row">Marginal <span class="t-marginal">10–15 kt</span></div>
+          <div class="threshold-row">No-go <span class="t-nogo">&gt; 15 kt</span></div>
+        </div>
+        <div class="threshold-card">
+          <div class="threshold-title">Pressure trend</div>
+          <div class="threshold-row">Best <span class="t-go">Rising ↑</span></div>
+          <div class="threshold-row">Ok <span class="t-marginal">Steady →</span></div>
+          <div class="threshold-row">Slow <span class="t-nogo">Falling ↓</span></div>
+        </div>
+      </div>
+      <p style="margin-top:14px;font-size:12px;color:var(--ink-faint);">Data via Open-Meteo Marine + Forecast APIs — free, no key, updated hourly. Always verify with the NOAA marine zone forecast for your area before heading out.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>© Kevin McKiernan</span>
+    <a href="index.html" style="border:none;color:var(--ink-faint);">Back to portfolio</a>
+  </div>
+</footer>
+
+<script>
+// ── Location data ─────────────────────────────────────────────────────────────
+// Coords are set ~10-15 NM offshore of each port
+const LOCATIONS = {
+  atlantic: [
+    { id: 'fernandina',  label: 'Fernandina Beach',      lat: 30.85, lon: -81.20, noaa: 'AMZ410' },
+    { id: 'jacksonville',label: 'Jacksonville Beach',     lat: 30.28, lon: -81.20, noaa: 'AMZ420' },
+    { id: 'staugustine', label: 'St. Augustine',          lat: 29.85, lon: -81.15, noaa: 'AMZ450' },
+    { id: 'daytona',     label: 'Ponce Inlet',            lat: 29.05, lon: -80.85, noaa: 'AMZ530' },
+    { id: 'canaveral',   label: 'Port Canaveral',         lat: 28.40, lon: -80.55, noaa: 'AMZ550' },
+    { id: 'fortpierce',  label: 'Fort Pierce',            lat: 27.40, lon: -79.90, noaa: 'AMZ610' },
+    { id: 'palmbeach',   label: 'Palm Beach',             lat: 26.70, lon: -79.80, noaa: 'AMZ630' },
+    { id: 'miami',       label: 'Miami / Haulover',       lat: 25.85, lon: -79.85, noaa: 'AMZ650' },
+  ],
+  keys: [
+    { id: 'keylargo',    label: 'Key Largo',              lat: 25.10, lon: -80.25, noaa: 'GMZ830' },
+    { id: 'islamorada',  label: 'Islamorada',             lat: 24.85, lon: -80.60, noaa: 'GMZ830' },
+    { id: 'marathon',    label: 'Marathon',               lat: 24.60, lon: -81.10, noaa: 'GMZ830' },
+    { id: 'keywest',     label: 'Key West',               lat: 24.45, lon: -81.95, noaa: 'GMZ830' },
+  ],
+  gulf: [
+    { id: 'naples',      label: 'Naples / Marco',         lat: 25.85, lon: -82.00, noaa: 'GMZ750' },
+    { id: 'fortmyers',   label: 'Fort Myers Beach',       lat: 26.40, lon: -82.40, noaa: 'GMZ730' },
+    { id: 'sarasota',    label: 'Sarasota / Venice',      lat: 27.00, lon: -82.90, noaa: 'GMZ656' },
+    { id: 'tampa',       label: 'Tampa Bay / St. Pete',   lat: 27.55, lon: -82.95, noaa: 'GMZ636' },
+    { id: 'tarpon',      label: 'Tarpon Springs',         lat: 28.20, lon: -83.10, noaa: 'GMZ632' },
+    { id: 'crystal',     label: 'Crystal River',          lat: 28.80, lon: -83.30, noaa: 'GMZ530' },
+    { id: 'panamacity',  label: 'Panama City Beach',      lat: 30.05, lon: -85.95, noaa: 'GMZ435' },
+    { id: 'destin',      label: 'Destin / Fort Walton',   lat: 30.30, lon: -86.50, noaa: 'GMZ432' },
+    { id: 'pensacola',   label: 'Pensacola',              lat: 30.10, lon: -87.40, noaa: 'GMZ430' },
+  ],
+};
+
+// State
+let activeLoc  = LOCATIONS.atlantic.find(l => l.id === 'staugustine');
+let boatLength = 24;
+let marineData = null, weatherData = null;
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+const mToFt    = m => m * 3.28084;
+const mpsToKt  = m => m * 1.94384;
+const deg2comp = d => ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];
+const DAYS     = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function classify(waveFt, period, windKt) {
+  const pr = period / waveFt, lp = waveFt / boatLength;
+  let score = 'go', reasons = [];
+  if      (pr < 2)    { score = 'nogo';                       reasons.push(`very short period (${pr.toFixed(1)}×)`); }
+  else if (pr < 3)    { if (score!=='nogo') score='marginal'; reasons.push(`short period (${pr.toFixed(1)}×)`); }
+  if      (lp > 0.30) { score = 'nogo';                       reasons.push(`waves ${Math.round(lp*100)}% of LOA`); }
+  else if (lp > 0.20) { if (score!=='nogo') score='marginal'; reasons.push(`waves ${Math.round(lp*100)}% of LOA`); }
+  if      (windKt>15) { score = 'nogo';                       reasons.push(`wind ${windKt.toFixed(0)} kt`); }
+  else if (windKt>10) { if (score!=='nogo') score='marginal'; reasons.push(`wind ${windKt.toFixed(0)} kt`); }
+  return { score, reasons };
+}
+const statusLabel = s => ({go:'Go',marginal:'Marginal',nogo:'No-go'}[s]);
+
+// ── Moon ──────────────────────────────────────────────────────────────────────
+function moonPhase(date) {
+  const cycle = 29.53058867;
+  const phase = (((date - new Date('2000-01-06T18:14:00Z')) / 86400000 % cycle) + cycle) % cycle;
+  const idx   = Math.floor(phase / cycle * 12);
+  return {
+    icon: ['🌑','🌒','🌒','🌓','🌔','🌔','🌕','🌖','🌖','🌗','🌘','🌘'][idx],
+    name: ['New moon','Waxing crescent','Waxing crescent','First quarter','Waxing gibbous','Waxing gibbous','Full moon','Waning gibbous','Waning gibbous','Last quarter','Waning crescent','Waning crescent'][idx],
+    pct: Math.round(phase/cycle*100), phase
+  };
+}
+
+function solunarTimes(date) {
+  const { phase } = moonPhase(date);
+  const lunation  = (phase / 29.53058867) * 24;
+  const mh1 = ((12 - lunation*(24/29.53)) % 24 + 24) % 24;
+  const fmt = h => { const hh=Math.floor(h),mm=Math.round((h-hh)*60)%60,ap=hh>=12?'pm':'am'; return `${hh===0?12:hh>12?hh-12:hh}:${mm.toString().padStart(2,'0')} ${ap}`; };
+  return [
+    {time:fmt(mh1),          type:'major', label:'Major bite'},
+    {time:fmt((mh1+12.4)%24),type:'major', label:'Major bite'},
+    {time:fmt((mh1+6.2)%24), type:'minor', label:'Minor bite'},
+    {time:fmt((mh1+18.6)%24),type:'minor', label:'Minor bite'},
+  ];
+}
+
+function sunTimes(date, lat, lon) {
+  const rad=Math.PI/180, n=Math.floor((date-new Date(date.getFullYear(),0,0))/86400000);
+  const J=2451545+n+0.0008-lon/360;
+  const M=(357.5291+0.98560028*(J-2451545))%360*rad;
+  const C=1.9148*Math.sin(M)+0.02*Math.sin(2*M)+0.0003*Math.sin(3*M);
+  const lam=((280.4665+0.98564736*(J-2451545)+C+180)%360)*rad;
+  const sinD=Math.sin(lam)*Math.sin(23.45*rad);
+  const cosH=(Math.sin(-0.8333*rad)-Math.sin(lat*rad)*sinD)/(Math.cos(lat*rad)*Math.cos(Math.asin(sinD)));
+  if (Math.abs(cosH)>1) return {rise:'--',set:'--'};
+  const H=Math.acos(cosH)/rad;
+  const tr=(180-lon-(Math.atan2(Math.sin(lam),Math.cos(lam)*Math.sin(23.45*rad))/rad))/360+J;
+  const toT=jd=>{const hrs=((jd+0.5)%1)*24,h=Math.floor(hrs)%24,m=Math.round((hrs-Math.floor(hrs))*60)%60;return `${h===0?12:h>12?h-12:h}:${m.toString().padStart(2,'0')} ${h>=12?'pm':'am'}`;};
+  return {rise:toT(tr-H/360),set:toT(tr+H/360)};
+}
+
+function pressureTrend(pressures, hi) {
+  const diff = pressures[hi] - pressures[Math.max(0,hi-3)];
+  if (diff> 1.5) return {label:'Rising', arrow:'↑',cls:'factor-good',note:'Best time to fish — active bite window'};
+  if (diff<-1.5) return {label:'Falling',arrow:'↓',cls:'factor-bad', note:'Fish diving deeper, slower bite'};
+  return              {label:'Steady', arrow:'→',cls:'factor-mid', note:'Stable conditions, moderate activity'};
+}
+const uvNote = uv => uv<3 ? {note:'Low UV — fish active near surface',cls:'factor-good'} : uv<6 ? {note:'Moderate UV — fish moving a bit deeper',cls:'factor-mid'} : {note:'High UV — target dawn/dusk, fish are deep',cls:'factor-bad'};
+
+function findHourIdx(times) {
+  const now=new Date(); let ci=0,md=Infinity;
+  times.forEach((t,i)=>{const d=Math.abs(new Date(t)-now);if(d<md){md=d;ci=i;}});
+  return ci;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderToday(hi) {
+  const wh=weatherData.hourly, mh=marineData.hourly;
+  const waveFt=mToFt(mh.wave_height[hi]), period=mh.wave_period[hi], wavDir=mh.wave_direction[hi];
+  const windKt=mpsToKt(wh.windspeed_10m[hi]), windDir=wh.winddirection_10m[hi], gustKt=mpsToKt(wh.windgusts_10m[hi]);
+  const sst=mh.sea_surface_temperature?.[hi], sstF=sst!=null?(sst*9/5+32).toFixed(1):null;
+  const {score,reasons}=classify(waveFt,period,windKt);
+  document.getElementById('active-location-label').textContent = activeLoc.label;
+  document.getElementById('today-content').innerHTML=`
+    <div class="status-block">
+      <div class="status-badge status-${score}"><span class="dot"></span>${statusLabel(score)}</div>
+      <div class="status-reason">${reasons.length?reasons.join(' · '):'All conditions favorable'}</div>
+    </div>
+    <div class="cond-grid">
+      <div class="cond-cell"><div class="cond-label">Wave height</div><div class="cond-value">${waveFt.toFixed(1)}</div><div class="cond-unit">feet</div></div>
+      <div class="cond-cell"><div class="cond-label">Wave period</div><div class="cond-value">${period.toFixed(0)}</div><div class="cond-unit">seconds</div><div class="cond-sub">ratio ${(period/waveFt).toFixed(1)}×</div></div>
+      <div class="cond-cell"><div class="cond-label">Swell direction</div><div class="cond-value">${deg2comp(wavDir)}</div><div class="cond-unit">${wavDir.toFixed(0)}°</div></div>
+      <div class="cond-cell"><div class="cond-label">Wind</div><div class="cond-value">${windKt.toFixed(0)} kt</div><div class="cond-unit">${deg2comp(windDir)}</div><div class="cond-sub">gusts ${gustKt.toFixed(0)} kt</div></div>
+      ${sstF?`<div class="cond-cell"><div class="cond-label">Sea surface temp</div><div class="cond-value">${sstF}°</div><div class="cond-unit">Fahrenheit</div></div>`:''}
+    </div>`;
+}
+
+function renderFishing(hi) {
+  const wh=weatherData.hourly, now=new Date();
+  const moon=moonPhase(now), sun=sunTimes(now,activeLoc.lat,activeLoc.lon), sol=solunarTimes(now);
+  const trend=pressureTrend(wh.surface_pressure,hi);
+  const pressInHg=(wh.surface_pressure[hi]*0.02953).toFixed(2);
+  const uv=wh.uv_index?.[hi]??null, uvI=uv!=null?uvNote(uv):null;
+  const precip=wh.precipitation_probability[hi]??0, precipAmt=wh.precipitation[hi]??0;
+  const rainSlice=Array.from({length:8},(_,i)=>({pct:wh.precipitation_probability[Math.min(hi+i,wh.precipitation_probability.length-1)]??0,label:`+${i}h`}));
+  const maxP=Math.max(...rainSlice.map(r=>r.pct),1);
+  const bars=rainSlice.map(r=>`<div class="rain-bar" style="height:${Math.round(r.pct/maxP*32)+2}px;opacity:${(0.35+r.pct/100*0.65).toFixed(2)};"></div>`).join('');
+  const lbls=rainSlice.map(r=>`<div class="rain-label">${r.label}</div>`).join('');
+  const pills=sol.map(s=>`<span class="solunar-pill ${s.type==='minor'?'minor':''}">${s.label} ${s.time}</span>`).join('');
+  document.getElementById('fishing-content').innerHTML=`
+    <div class="factors-grid">
+      <div class="factor-card">
+        <div class="factor-title">Barometric pressure</div>
+        <div class="factor-value">${pressInHg} inHg ${trend.arrow}</div>
+        <div class="factor-note"><span class="${trend.cls}">${trend.label}</span> — ${trend.note}</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-title">Rainfall next 8 hours</div>
+        <div class="factor-value" style="font-size:17px;">${precip}% chance</div>
+        <div class="rain-bars">${bars}</div>
+        <div class="rain-labels">${lbls}</div>
+        <div class="factor-note" style="margin-top:4px;">${precipAmt>0.1?precipAmt.toFixed(1)+' mm expected':'No precipitation expected'}</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-title">Moon phase</div>
+        <div class="moon-icon">${moon.icon}</div>
+        <div class="factor-value" style="font-size:14px;">${moon.name}</div>
+        <div class="factor-note">~${moon.pct}% illuminated</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-title">Sun · ${activeLoc.label}</div>
+        <div class="factor-value" style="font-size:14px;line-height:1.7;">↑ ${sun.rise}<br>↓ ${sun.set}</div>
+        <div class="factor-note">Prime windows at dawn and dusk</div>
+      </div>
+      ${uvI?`<div class="factor-card"><div class="factor-title">UV index</div><div class="factor-value">${Math.round(uv)}</div><div class="factor-note"><span class="${uvI.cls}">${uvI.note}</span></div></div>`:''}
+      <div class="factor-card" style="${uvI?'':'grid-column:span 2;'}">
+        <div class="factor-title">Solunar bite windows</div>
+        <div class="solunar-row">${pills}</div>
+        <div class="factor-note" style="margin-top:9px;">Major = peak feeding · Minor = secondary window</div>
+      </div>
+    </div>`;
+}
+
+function renderWeek() {
+  const times=marineData.hourly.time, seen=new Set(), days=[];
+  times.forEach((t,i)=>{const d=new Date(t),ds=d.toISOString().slice(0,10);if(!seen.has(ds)&&d.getUTCHours()===12){seen.add(ds);days.push(i);}});
+  const cells=days.slice(0,7).map(i=>{
+    const d=new Date(times[i]);
+    const waveFt=mToFt(marineData.hourly.wave_height[i]), period=marineData.hourly.wave_period[i];
+    const windKt=mpsToKt(weatherData.hourly.windspeed_10m[i]), rain=weatherData.hourly.precipitation_probability[i]??0;
+    const {score}=classify(waveFt,period,windKt);
+    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${rain}% rain</div></div>`;
+  }).join('');
+  document.getElementById('week-content').innerHTML=`<div class="week-strip">${cells}</div>`;
+  document.getElementById('updated-at').textContent=`Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Open-Meteo · coords ${activeLoc.lat}°N ${Math.abs(activeLoc.lon)}°W`;
+}
+
+function render() {
+  if (!marineData||!weatherData) return;
+  const hi=findHourIdx(marineData.hourly.time);
+  renderToday(hi); renderFishing(hi); renderWeek();
+}
+
+// ── Cache ─────────────────────────────────────────────────────────────────────
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+function cacheKey(lat, lon) { return `offshore_${lat}_${lon}`; }
+function cacheGet(lat, lon) {
+  try {
+    const raw = localStorage.getItem(cacheKey(lat, lon));
+    if (!raw) return null;
+    const { ts, marine, weather } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return { marine, weather };
+  } catch { return null; }
+}
+function cacheSet(lat, lon, marine, weather) {
+  try { localStorage.setItem(cacheKey(lat, lon), JSON.stringify({ ts: Date.now(), marine, weather })); } catch {}
+}
+
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+async function fetchData() {
+  ['today-content','fishing-content','week-content'].forEach(id=>{
+    document.getElementById(id).innerHTML='<div class="loading">Fetching conditions…</div>';
+  });
+  marineData=null; weatherData=null;
+  const {lat,lon}=activeLoc;
+  const cached = cacheGet(lat, lon);
+  if (cached) { marineData=cached.marine; weatherData=cached.weather; render(); return; }
+  try {
+    const [mRes,wRes]=await Promise.all([
+      fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,sea_surface_temperature&forecast_days=7&timezone=America%2FNew_York`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms`)
+    ]);
+    if (!mRes.ok||!wRes.ok) throw new Error(`HTTP ${mRes.status}/${wRes.status}`);
+    marineData=await mRes.json(); weatherData=await wRes.json();
+    cacheSet(lat, lon, marineData, weatherData);
+    render();
+  } catch(e) {
+    ['today-content','fishing-content','week-content'].forEach(id=>{
+      document.getElementById(id).innerHTML=`<div class="error-msg">Could not load forecast data. Serve over HTTP — use GitHub Pages or <code>python3 -m http.server 8000</code> locally. (${e.message})</div>`;
+    });
+  }
+}
+
+// ── Build location buttons ────────────────────────────────────────────────────
+function buildLocButtons() {
+  Object.entries(LOCATIONS).forEach(([coast, locs]) => {
+    const container = document.getElementById(`${coast}-locs`);
+    locs.forEach(loc => {
+      const btn = document.createElement('button');
+      btn.className = 'loc-btn' + (loc.id === activeLoc.id ? ' active' : '');
+      btn.textContent = loc.label;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.loc-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        activeLoc = loc;
+        fetchData();
+      });
+      container.appendChild(btn);
+    });
+  });
+}
+
+// ── Boat buttons ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.boat-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.boat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    boatLength=parseInt(btn.dataset.length);
+    render();
+  });
+});
+
+buildLocButtons();
+fetchData();
+</script>
+</body>
+</html>
