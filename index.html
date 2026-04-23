@@ -1,195 +1,278 @@
-<!DOCTYPE HTML>
-<!--
-    Massively by HTML5 UP
-    html5up.net | @ajlkn
-    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-<html>
-    <head>
-        <title>Kevin McKiernan — Cyber Security Professional</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-        <link rel="stylesheet" href="assets/css/main.css" />
-        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 20 L90 50 C90 72 72 88 50 95 C28 88 10 72 10 50 L10 20 Z' fill='%23888888'/></svg>" />
-        <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-    </head>
-    <body class="is-preload">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kevin McKiernan — IT Security Engineer</title>
+<meta name="description" content="Kevin McKiernan — IT security engineer based in St. Augustine, FL. Vulnerability management, penetration testing, cloud security.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 20 L90 50 C90 72 72 88 50 95 C28 88 10 72 10 50 L10 20 Z' fill='%238a6f3a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f3;
+    --surface: #f3efe4;
+    --ink: #1a1a1a;
+    --ink-soft: #3a3a3a;
+    --ink-muted: #5a5a5a;
+    --ink-faint: #8a8275;
+    --rule: #d4ccb8;
+    --accent: #8a6f3a;
+    --accent-strong: #6d5628;
+    --serif: 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
 
-        <!-- Wrapper -->
-            <div id="wrapper" class="fade-in">
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-                <!-- Intro -->
-                    <div id="intro">
-                        <h1>Kevin<br />
-                        McKiernan</h1>
-                        <p>Cyber Security Professional | IT Security Engineer<br />
-                        Vulnerability Management · Penetration Testing · Cloud Security</p>
-                        <ul class="actions">
-                            <li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
-                        </ul>
-                    </div>
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 1px; transition: color .15s ease, border-color .15s ease; }
+  a:hover { color: var(--accent-strong); border-bottom-color: var(--accent-strong); }
 
-                <!-- Header -->
-                    <header id="header">
-                        <a href="index.html" class="logo">KevsTech</a>
-                    </header>
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 32px; }
 
-                <!-- Nav -->
-                    <nav id="nav">
-                        <ul class="links">
-                            <li class="active"><a href="index.html">Home</a></li>
-                            <li><a href="blog.html">Blog</a></li>
-                        </ul>
-                        <ul class="icons">
-                            <li><a href="https://www.linkedin.com/in/kevin-mckiernan-ab2b68b5/" class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
-                            <li><a href="https://github.com/Kevin-mckiernan" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
-                        </ul>
-                    </nav>
+  /* Top bar */
+  .topbar { padding: 28px 0 0; }
+  .topbar-inner { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
+  .topbar-inner .brand { color: var(--accent); }
 
-                <!-- Main -->
-                    <div id="main">
+  /* Hero */
+  .hero { padding: 72px 0 64px; }
+  .eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 28px; }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(44px, 7vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    margin: 0 0 16px;
+  }
+  .hero .lede {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(18px, 2.2vw, 22px);
+    color: var(--ink-muted);
+    margin: 0 0 32px;
+    font-weight: 400;
+  }
+  .hero-rule { width: 48px; height: 1px; background: var(--rule); margin: 0 0 32px; }
+  .hero p { color: var(--ink-soft); max-width: 560px; margin: 0 0 16px; }
 
-                        <!-- Featured Post -->
-                            <article class="post featured">
-                                <header class="major">
-                                    <h2><a href="#">IT Security Engineer<br />
-                                    with 8+ Years of Experience</a></h2>
-                                    <p>I lead Threat and Vulnerability Management programs responsible for risk mitigation,
-                                    vulnerability scanning, reporting, configuration guidelines, patch penetration metrics,
-                                    and penetration testing. Passionate about building secure systems and sharing knowledge
-                                    through hands-on home lab experimentation.</p>
-                                </header>
-                                <a href="#" class="image main"><img src="images/pic01.jpg" alt="Kevin McKiernan" /></a>
-                                <ul class="actions special">
-                                    <li><a href="https://www.linkedin.com/in/kevin-mckiernan-ab2b68b5/" class="button large">Connect on LinkedIn</a></li>
-                                </ul>
-                            </article>
+  .hero-links { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 24px; font-size: 14px; }
 
-                        <!-- Posts -->
-                            <section class="posts">
-                                <article>
-                                    <header>
-                                        <h2><a href="#">Vulnerability<br />
-                                        Management</a></h2>
-                                    </header>
-                                    <a href="#" class="image fit"><img src="images/pic02.jpg" alt="" /></a>
-                                    <p>End-to-end vulnerability lifecycle management including scanning, risk prioritization, and remediation tracking. Tools: Qualys, Rapid7, Kenna, Tanium, Seemplicity.</p>
-                                    <ul class="actions special">
-                                        <li><a href="#" class="button">Learn More</a></li>
-                                    </ul>
-                                </article>
-                                <article>
-                                    <header>
-                                        <h2><a href="#">Penetration<br />
-                                        Testing</a></h2>
-                                    </header>
-                                    <a href="#" class="image fit"><img src="images/pic03.jpg" alt="" /></a>
-                                    <p>Hands-on penetration testing and red team assessments using Nmap, CIS Benchmarks, and industry-standard methodologies to identify and exploit security weaknesses.</p>
-                                    <ul class="actions special">
-                                        <li><a href="#" class="button">Learn More</a></li>
-                                    </ul>
-                                </article>
-                                <article>
-                                    <header>
-                                        <h2><a href="#">Cloud &amp;<br />
-                                        Infrastructure Security</a></h2>
-                                    </header>
-                                    <a href="#" class="image fit"><img src="images/pic04.jpg" alt="" /></a>
-                                    <p>Securing cloud environments across AWS and Azure. Experience with Prisma, Zscaler, Umbrella, Intune, and CICD pipeline security.</p>
-                                    <ul class="actions special">
-                                        <li><a href="#" class="button">Learn More</a></li>
-                                    </ul>
-                                </article>
-                                <article>
-                                    <header>
-                                        <h2><a href="#">Identity &amp;<br />
-                                        Access Management</a></h2>
-                                    </header>
-                                    <a href="#" class="image fit"><img src="images/pic05.jpg" alt="" /></a>
-                                    <p>SSO, MFA, and PKI implementations using OKTA, DUO, and Active Directory. Experienced in managing enterprise-scale identity programs.</p>
-                                    <ul class="actions special">
-                                        <li><a href="#" class="button">Learn More</a></li>
-                                    </ul>
-                                </article>
-                                <article>
-                                    <header>
-                                        <h2><a href="#">SIEM &amp;<br />
-                                        SOAR</a></h2>
-                                    </header>
-                                    <a href="#" class="image fit"><img src="images/pic06.jpg" alt="" /></a>
-                                    <p>Splunk for threat detection and log analysis. Cortex XSOAR for security orchestration, automation, and response workflows at enterprise scale.</p>
-                                    <ul class="actions special">
-                                        <li><a href="#" class="button">Learn More</a></li>
-                                    </ul>
-                                </article>
-                                <article>
-                                    <header>
-                                        <h2><a href="#">Endpoint<br />
-                                        Protection</a></h2>
-                                    </header>
-                                    <a href="#" class="image fit"><img src="images/pic07.jpg" alt="" /></a>
-                                    <p>EPP/EDR deployment and management across Mac, Windows, and Linux using CrowdStrike, Malwarebytes, JAMF, and Intune.</p>
-                                    <ul class="actions special">
-                                        <li><a href="#" class="button">Learn More</a></li>
-                                    </ul>
-                                </article>
-                            </section>
+  /* Section divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 56px 0 32px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .divider::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
 
-                    </div>
+  /* Skills */
+  .skills-intro { color: var(--ink-soft); max-width: 560px; margin: 0 0 36px; }
+  .skills-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .skill-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 32px;
+    padding: 20px 0;
+    border-top: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .skill-row:last-child { border-bottom: 1px solid var(--rule); }
+  .skill-name {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+  .skill-tools { font-size: 14px; color: var(--ink-muted); line-height: 1.6; }
 
-                <!-- Footer -->
-                    <footer id="footer">
-                        <section>
-                            <form method="post" action="https://formspree.io/f/xpqolnzq">
-                                <div class="fields">
-                                    <div class="field">
-                                        <label for="name">Name</label>
-                                        <input type="text" name="name" id="name" />
-                                    </div>
-                                    <div class="field">
-                                        <label for="email">Email</label>
-                                        <input type="text" name="email" id="email" />
-                                    </div>
-                                    <div class="field">
-                                        <label for="message">Message</label>
-                                        <textarea name="message" id="message" rows="3"></textarea>
-                                    </div>
-                                </div>
-                                <ul class="actions">
-                                    <li><input type="submit" value="Send Message" /></li>
-                                </ul>
-                            </form>
-                        </section>
-                        <section class="split contact">
-                            <section>
-                                <h3>Email</h3>
-                                <p><a href="mailto:kmckiernan94@gmail.com">kmckiernan94@gmail.com</a></p>
-                            </section>
-                            <section>
-                                <h3>Social</h3>
-                                <ul class="icons alt">
-                                    <li><a href="https://www.linkedin.com/in/kevin-mckiernan-ab2b68b5/" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
-                                    <li><a href="https://github.com/Kevin-mckiernan" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
-                                </ul>
-                            </section>
-                        </section>
-                    </footer>
+  @media (max-width: 600px) {
+    .skill-row { grid-template-columns: 1fr; gap: 8px; }
+  }
 
-                <!-- Copyright -->
-                    <div id="copyright">
-                        <ul><li>&copy; Kevin McKiernan</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
-                    </div>
+  /* Contact */
+  .contact-lede {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink-muted);
+    margin: 0 0 28px;
+    max-width: 560px;
+  }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; margin-bottom: 40px; font-size: 14px; }
+  .contact-grid .label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+  .contact-grid .value { color: var(--ink-soft); }
+  @media (max-width: 500px) { .contact-grid { grid-template-columns: 1fr; } }
 
-            </div>
+  /* Form */
+  form { display: grid; gap: 18px; max-width: 560px; }
+  form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 500px) { form .row { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  input[type="text"], input[type="email"], textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    padding: 8px 0 10px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  input[type="text"]:focus, input[type="email"]:focus, textarea:focus { border-bottom-color: var(--accent); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  button[type="submit"] {
+    justify-self: start;
+    margin-top: 8px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+  button[type="submit"]:hover { background: var(--accent); color: var(--bg); }
 
-        <!-- Scripts -->
-            <script src="assets/js/jquery.min.js"></script>
-            <script src="assets/js/jquery.scrollex.min.js"></script>
-            <script src="assets/js/jquery.scrolly.min.js"></script>
-            <script src="assets/js/browser.min.js"></script>
-            <script src="assets/js/breakpoints.min.js"></script>
-            <script src="assets/js/util.js"></script>
-            <script src="assets/js/main.js"></script>
+  /* Footer */
+  footer { padding: 64px 0 48px; margin-top: 72px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--ink-faint); letter-spacing: 1px; }
+  footer .foot-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 
-    </body>
+  ::selection { background: var(--accent); color: var(--bg); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-inner">
+    <span class="brand">Kevstech</span>
+    <span>St. Augustine · FL</span>
+  </div>
+</div>
+
+<main>
+  <!-- Hero -->
+  <section class="hero wrap" id="about">
+    <div class="eyebrow">Kevin McKiernan · portfolio</div>
+    <h1>Kevin McKiernan</h1>
+    <p class="lede">IT security engineer — eight years of vulnerability management, penetration testing, and cloud security.</p>
+    <div class="hero-rule"></div>
+    <p>I lead threat and vulnerability management programs responsible for risk mitigation, vulnerability scanning, reporting, configuration guidelines, patch and penetration metrics, and penetration testing.</p>
+    <p>Previously built out identity, endpoint, and SIEM programs at enterprise scale. I care about the parts of security that actually change behavior — tight feedback loops, good telemetry, and writing that engineers will read.</p>
+    <div class="hero-links">
+      <a href="mailto:kmckiernan94@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/kevin-mckiernan-ab2b68b5/" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/Kevin-mckiernan" rel="noopener">GitHub</a>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section class="wrap" id="skills">
+    <div class="divider">Focus areas</div>
+    <p class="skills-intro">A snapshot of where I spend my time and the tools I use to get there.</p>
+
+    <div class="skills-grid">
+      <div class="skill-row">
+        <div class="skill-name">Vulnerability management</div>
+        <div class="skill-tools">End-to-end lifecycle — scanning, risk prioritization, remediation tracking. Qualys, Rapid7, Kenna, Tanium, Seemplicity.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Penetration testing</div>
+        <div class="skill-tools">Hands-on testing and red-team assessments. Nmap, CIS Benchmarks, industry-standard methodologies.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Cloud &amp; infrastructure</div>
+        <div class="skill-tools">Securing AWS and Azure environments. Prisma, Zscaler, Umbrella, Intune, CI/CD pipeline security.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Identity &amp; access</div>
+        <div class="skill-tools">SSO, MFA, and PKI at enterprise scale. Okta, Duo, Active Directory.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">SIEM &amp; SOAR</div>
+        <div class="skill-tools">Splunk for detection and log analysis. Cortex XSOAR for orchestration and automated response.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Endpoint protection</div>
+        <div class="skill-tools">EPP/EDR deployment across Mac, Windows, Linux. CrowdStrike, Malwarebytes, JAMF, Intune.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="wrap" id="contact">
+    <div class="divider">Get in touch</div>
+    <p class="contact-lede">Happy to talk about security engineering roles, consulting, or interesting problems.</p>
+
+    <div class="contact-grid">
+      <div>
+        <div class="label">Email</div>
+        <div class="value"><a href="mailto:kmckiernan94@gmail.com">kmckiernan94@gmail.com</a></div>
+      </div>
+      <div>
+        <div class="label">Location</div>
+        <div class="value">St. Augustine, Florida</div>
+      </div>
+      <div>
+        <div class="label">LinkedIn</div>
+        <div class="value"><a href="https://www.linkedin.com/in/kevin-mckiernan-ab2b68b5/" rel="noopener">in/kevin-mckiernan</a></div>
+      </div>
+      <div>
+        <div class="label">GitHub</div>
+        <div class="value"><a href="https://github.com/Kevin-mckiernan" rel="noopener">Kevin-mckiernan</a></div>
+      </div>
+    </div>
+
+    <form method="POST" action="https://formspree.io/f/xpqolnzq">
+      <div class="row">
+        <div>
+          <label for="name">Name</label>
+          <input type="text" name="name" id="name" required>
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input type="email" name="email" id="email" required>
+        </div>
+      </div>
+      <div>
+        <label for="message">Message</label>
+        <textarea name="message" id="message" rows="4" required></textarea>
+      </div>
+      <button type="submit">Send message</button>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>© Kevin McKiernan</span>
+    <span>Kevstech · St. Augustine, FL</span>
+  </div>
+</footer>
+
+</body>
 </html>
