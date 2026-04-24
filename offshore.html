@@ -106,6 +106,20 @@
   .day-nogo { background: var(--nogo-bg); } .day-nogo .day-status { color: var(--nogo); }
   .day-pressure { font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
 
+  .outlook-grid { display: grid; gap: 0; margin-bottom: 8px; }
+  .outlook-row { display: grid; grid-template-columns: 44px 96px 1fr; gap: 10px 18px; padding: 12px 0; border-top: 1px solid var(--rule); align-items: start; }
+  .outlook-row:last-child { border-bottom: 1px solid var(--rule); }
+  .outlook-day { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); padding-top: 2px; }
+  .outlook-temp { font-family: var(--serif); font-size: 18px; line-height: 1.1; color: var(--ink); }
+  .outlook-temp-lo { font-size: 12px; color: var(--ink-muted); }
+  .outlook-rain { font-size: 11px; margin-top: 4px; }
+  .outlook-tides { font-size: 12px; color: var(--ink-muted); line-height: 1.8; }
+  .prime-window { display: block; font-size: 10px; color: var(--go); margin-left: 14px; line-height: 1.5; }
+  @media (max-width: 560px) {
+    .outlook-row { grid-template-columns: 44px 1fr; }
+    .outlook-tides { grid-column: 1 / -1; border-top: 1px solid var(--rule); padding-top: 8px; }
+  }
+
   .explainer { border-top: 1px solid var(--rule); padding-top: 22px; margin-bottom: 40px; }
   .explainer h3 { font-family: var(--serif); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
   .explainer p { font-size: 13px; color: var(--ink-soft); margin: 0 0 8px; max-width: 560px; }
@@ -197,6 +211,11 @@
     <div class="divider">This week</div>
     <div id="week-content"><div class="loading">Loading forecast…</div></div>
     <p class="foot-note" id="updated-at"></p>
+  </section>
+
+  <section class="wrap">
+    <div class="divider">7-day outlook</div>
+    <div id="outlook-content"><div class="loading">Loading outlook…</div></div>
   </section>
 
   <section class="wrap">
@@ -440,6 +459,8 @@ function renderFishing(hi) {
   const uv=wh.uv_index?.[hi]??null, uvI=uv!=null?uvNote(uv):null;
   const cloud=wh.cloudcover?.[hi]??null, wcode=wh.weathercode?.[hi]??0;
   const precip=wh.precipitation_probability[hi]??0, precipAmt=wh.precipitation[hi]??0;
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const todayTides = tideData && tideData.predictions ? tideData.predictions.filter(p => p.t.startsWith(todayStr)) : [];
 
   // Sky conditions from WMO weather code
   const skyInfo = (() => {
@@ -502,7 +523,7 @@ function renderFishing(hi) {
       </div>
       <div class="factor-card">
         <div class="factor-title">Tides · ${activeLoc.label}</div>
-        ${tideData && tideData.predictions ? tideData.predictions.map(p=>`<div class="tide-row">${p.type==='H'?'↑ High':'↓ Low'} ${parseFloat(p.v).toFixed(1)} ft &nbsp;·&nbsp; ${fmtTideTime(p.t)}</div>`).join('') : '<div class="tide-row" style="color:var(--ink-faint);font-size:12px;">Tide data unavailable</div>'}
+        ${todayTides.length ? todayTides.map(p=>`<div class="tide-row">${p.type==='H'?'↑ High':'↓ Low'} ${parseFloat(p.v).toFixed(1)} ft &nbsp;·&nbsp; ${fmtTideTime(p.t)}<span class="prime-window">🎣 ${shiftTideTime(p.t,-1)}–${shiftTideTime(p.t,1)}</span></div>`).join('') : '<div class="tide-row" style="color:var(--ink-faint);font-size:12px;">Tide data unavailable</div>'}
         <div class="factor-note" style="margin-top:6px;">NOAA predictions · MLLW</div>
       </div>
       ${uvI?`<div class="factor-card"><div class="factor-title">UV index</div><div class="factor-value">${Math.round(uv)}</div><div class="factor-note"><span class="${uvI.cls}">${uvI.note}</span></div></div>`:''}
@@ -534,15 +555,51 @@ function renderWeek() {
   document.getElementById('updated-at').textContent=`Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Open-Meteo · coords ${activeLoc.lat}°N ${Math.abs(activeLoc.lon)}°W`;
 }
 
+function renderOutlook() {
+  if (!weatherData) return;
+  const wh = weatherData.hourly;
+  const dayMap = {};
+  wh.time.forEach((t, i) => {
+    const ds = t.slice(0, 10);
+    if (!dayMap[ds]) dayMap[ds] = { temps: [], rain: [] };
+    if (wh.temperature_2m?.[i] != null) dayMap[ds].temps.push(wh.temperature_2m[i]);
+    if (wh.precipitation_probability?.[i] != null) dayMap[ds].rain.push(wh.precipitation_probability[i]);
+  });
+  const tideMap = {};
+  if (tideData && tideData.predictions) {
+    tideData.predictions.forEach(p => {
+      const ds = p.t.slice(0, 10);
+      if (!tideMap[ds]) tideMap[ds] = [];
+      tideMap[ds].push(p);
+    });
+  }
+  const dates = Object.keys(dayMap).sort().slice(0, 7);
+  const rows = dates.map(ds => {
+    const d = new Date(ds + 'T12:00:00');
+    const { temps, rain } = dayMap[ds];
+    const hi = temps.length ? Math.round(Math.max(...temps)) : null;
+    const lo = temps.length ? Math.round(Math.min(...temps)) : null;
+    const maxRain = rain.length ? Math.max(...rain) : null;
+    const dayTides = tideMap[ds] || [];
+    const tempHtml = hi != null ? `<div class="outlook-temp">${hi}°<span class="outlook-temp-lo"> / ${lo}°</span></div>` : '<div class="outlook-temp">--</div>';
+    const rainHtml = maxRain != null ? `<div class="outlook-rain" style="color:${maxRain>50?'#5a7f9a':'var(--ink-faint)'}">${maxRain}% rain</div>` : '';
+    const tidesHtml = dayTides.length
+      ? dayTides.map(p=>`<div>${p.type==='H'?'↑ High':'↓ Low'} ${parseFloat(p.v).toFixed(1)} ft · ${fmtTideTime(p.t)}<span class="prime-window">🎣 ${shiftTideTime(p.t,-1)}–${shiftTideTime(p.t,1)}</span></div>`).join('')
+      : '<span style="color:var(--ink-faint);font-size:11px;">No tide data</span>';
+    return `<div class="outlook-row"><div class="outlook-day">${DAYS[d.getDay()]}</div><div>${tempHtml}${rainHtml}</div><div class="outlook-tides">${tidesHtml}</div></div>`;
+  }).join('');
+  document.getElementById('outlook-content').innerHTML = `<div class="outlook-grid">${rows}</div>`;
+}
+
 function render() {
   if (!marineData||!weatherData) return;
   const hi=findHourIdx(marineData.hourly.time);
-  renderToday(hi); renderFishing(hi); renderWeek();
+  renderToday(hi); renderFishing(hi); renderWeek(); renderOutlook();
 }
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
 const CACHE_TTL = 30 * 60 * 1000;
-function cacheKey(lat, lon) { return `offshore_v3_${lat}_${lon}`; } // bump version to invalidate old cache
+function cacheKey(lat, lon) { return `offshore_v5_${lat}_${lon}`; } // bump version to invalidate old cache
 function cacheGet(lat, lon) {
   try {
     const raw = localStorage.getItem(cacheKey(lat, lon));
@@ -564,8 +621,10 @@ async function fetchTides(stationId) {
   const mo = String(now.getMonth()+1).padStart(2,'0');
   const dy = String(now.getDate()).padStart(2,'0');
   const dateStr = `${yr}${mo}${dy}`;
+  const end = new Date(now); end.setDate(end.getDate() + 6);
+  const endStr = `${end.getFullYear()}${String(end.getMonth()+1).padStart(2,'0')}${String(end.getDate()).padStart(2,'0')}`;
   try {
-    const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=${stationId}&begin_date=${dateStr}&end_date=${dateStr}&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kevstech&format=json`);
+    const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=${stationId}&begin_date=${dateStr}&end_date=${endStr}&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kevstech&format=json`);
     if (!r.ok) return null;
     const d = await r.json();
     return (d.error || !d.predictions) ? null : d;
@@ -580,9 +639,19 @@ function fmtTideTime(t) {
   return `${h12}:${String(m).padStart(2,'0')} ${ap}`;
 }
 
+function shiftTideTime(t, hrs) {
+  const [, time] = t.split(' ');
+  const [h, m] = time.split(':').map(Number);
+  const total = ((h * 60 + m + hrs * 60) % 1440 + 1440) % 1440;
+  const nh = Math.floor(total / 60), nm = total % 60;
+  const ap = nh >= 12 ? 'pm' : 'am';
+  const h12 = nh === 0 ? 12 : nh > 12 ? nh - 12 : nh;
+  return `${h12}:${String(nm).padStart(2,'0')} ${ap}`;
+}
+
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 async function fetchData() {
-  ['today-content','fishing-content','week-content'].forEach(id=>{
+  ['today-content','fishing-content','week-content','outlook-content'].forEach(id=>{
     document.getElementById(id).innerHTML='<div class="loading">Fetching conditions…</div>';
   });
   marineData=null; weatherData=null; tideData=null;
@@ -596,7 +665,7 @@ async function fetchData() {
   try {
     const [mRes,wRes,tides]=await Promise.all([
       fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,wind_wave_height,wind_wave_period,sea_surface_temperature&forecast_days=7&timezone=America%2FNew_York`),
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index,cloudcover,weathercode&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index,cloudcover,weathercode,temperature_2m&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms&temperature_unit=fahrenheit`),
       fetchTides(tide),
     ]);
     if (!mRes.ok||!wRes.ok) throw new Error(`HTTP ${mRes.status}/${wRes.status}`);
@@ -604,7 +673,7 @@ async function fetchData() {
     cacheSet(lat, lon, marineData, weatherData, tideData);
     render();
   } catch(e) {
-    ['today-content','fishing-content','week-content'].forEach(id=>{
+    ['today-content','fishing-content','week-content','outlook-content'].forEach(id=>{
       document.getElementById(id).innerHTML=`<div class="error-msg">Could not load forecast data. Serve over HTTP — use GitHub Pages or <code>python3 -m http.server 8000</code> locally. (${e.message})</div>`;
     });
   }
