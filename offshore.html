@@ -83,10 +83,13 @@
   .factor-note { font-size: 12px; color: var(--ink-muted); line-height: 1.4; }
   .factor-good { color: var(--go); } .factor-mid { color: var(--marginal); } .factor-bad { color: var(--nogo); }
 
-  .rain-bars { display: flex; align-items: flex-end; gap: 3px; height: 36px; margin: 7px 0 3px; }
-  .rain-bar { flex: 1; background: #8aadca; border-radius: 1px 1px 0 0; min-height: 2px; }
-  .rain-labels { display: flex; gap: 3px; }
-  .rain-label { flex: 1; font-size: 9px; color: var(--ink-faint); text-align: center; }
+  .rain-chart { margin: 8px 0 4px; }
+  .wave-strip { display: flex; overflow-x: auto; gap: 3px; margin-top: 14px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .wave-hour { flex: 0 0 58px; text-align: center; padding: 7px 3px; border-radius: 2px; }
+  .wave-hour-time { font-size: 9px; letter-spacing: 0.5px; color: var(--ink-faint); margin-bottom: 3px; }
+  .wave-hour-ht { font-family: var(--serif); font-size: 15px; line-height: 1.1; margin-bottom: 1px; }
+  .wave-hour-per { font-size: 10px; color: var(--ink-muted); }
+  .wave-hour-wind { font-size: 9px; color: #5a7f9a; margin-top: 2px; }
   .moon-icon { font-size: 24px; line-height: 1; margin-bottom: 3px; }
   .solunar-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 7px; }
   .solunar-pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--go-bg); color: var(--go); }
@@ -383,9 +386,26 @@ function findHourIdx(times) {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
+function waveHourly(hi) {
+  const mh=marineData.hourly, wh=weatherData.hourly, times=mh.time;
+  const cells=[];
+  for (let i=hi; i<Math.min(hi+12, times.length); i++) {
+    const hr=parseInt(times[i].split('T')[1]);
+    const ap=hr>=12?'pm':'am', h12=hr===0?12:hr>12?hr-12:hr;
+    const waveFt=mToFt(mh.wave_height[i]), period=mh.wave_period[i];
+    const windKt=mpsToKt(wh.windspeed_10m[i]), windDir=wh.winddirection_10m[i];
+    const {score}=classify(waveFt,period,windKt);
+    const wArrow=`<svg width="9" height="9" viewBox="0 0 14 14" style="transform:rotate(${windDir}deg);vertical-align:-1px;"><path d="M7 1 L4 11 L7 8.5 L10 11 Z" fill="currentColor"/></svg>`;
+    cells.push(`<div class="wave-hour day-${score}"><div class="wave-hour-time">${i===hi?'now':`${h12}${ap}`}</div><div class="wave-hour-ht">${waveFt.toFixed(1)}<span style="font-size:9px;"> ft</span></div><div class="wave-hour-per">${period.toFixed(0)}s</div><div class="wave-hour-wind">${wArrow}${windKt.toFixed(0)}kt</div></div>`);
+  }
+  return `<div class="wave-strip">${cells.join('')}</div>`;
+}
+
 function renderToday(hi) {
   const wh=weatherData.hourly, mh=marineData.hourly;
   const waveFt=mToFt(mh.wave_height[hi]), period=mh.wave_period[hi], wavDir=mh.wave_direction[hi];
+  const swellFt=mToFt(mh.swell_wave_height?.[hi]??0), swellPer=mh.swell_wave_period?.[hi]??0;
+  const windWaveFt=mToFt(mh.wind_wave_height?.[hi]??0), windWavePer=mh.wind_wave_period?.[hi]??0;
   const windKt=mpsToKt(wh.windspeed_10m[hi]), windDir=wh.winddirection_10m[hi], gustKt=mpsToKt(wh.windgusts_10m[hi]);
   const sst=mh.sea_surface_temperature?.[hi], sstF=sst!=null?(sst*9/5+32).toFixed(1):null;
   const {score,reasons}=classify(waveFt,period,windKt);
@@ -396,18 +416,20 @@ function renderToday(hi) {
     nogo:     'Conditions exceed safe limits for your boat size.'
   };
   const windArrow = `<svg width="13" height="13" viewBox="0 0 14 14" style="transform:rotate(${windDir}deg);vertical-align:-1px;margin-right:3px;"><path d="M7 1 L4 11 L7 8.5 L10 11 Z" fill="currentColor"/></svg>`;
+  const swellSub = swellFt>0.1 ? `<div class="cond-sub">swell ${swellFt.toFixed(1)} ft / ${swellPer.toFixed(0)}s</div><div class="cond-sub">chop ${windWaveFt.toFixed(1)} ft / ${windWavePer.toFixed(0)}s</div>` : '';
   document.getElementById('today-content').innerHTML=`
     <div class="status-block">
       <div class="status-badge status-${score}"><span class="dot"></span>${statusLabel(score)}</div>
       <div class="status-reason">${scoreDesc[score]}${reasons.length?' Flagged: '+reasons.join(', ').replace(/\(.*?\)/g,'').trim()+'.':''}</div>
     </div>
     <div class="cond-grid">
-      <div class="cond-cell"><div class="cond-label">Wave height</div><div class="cond-value">${waveFt.toFixed(1)}</div><div class="cond-unit">feet</div></div>
-      <div class="cond-cell"><div class="cond-label">Wave period</div><div class="cond-value">${period.toFixed(0)}</div><div class="cond-unit">seconds</div><div class="cond-sub">ratio ${(period/waveFt).toFixed(1)}×</div></div>
+      <div class="cond-cell"><div class="cond-label">Wave height</div><div class="cond-value">${waveFt.toFixed(1)}</div><div class="cond-unit">feet · ${period.toFixed(0)}s period</div><div class="cond-sub">ratio ${(period/waveFt).toFixed(1)}×</div>${swellSub}</div>
       <div class="cond-cell"><div class="cond-label">Swell direction</div><div class="cond-value">${deg2comp(wavDir)}</div><div class="cond-unit">${wavDir.toFixed(0)}°</div></div>
       <div class="cond-cell"><div class="cond-label">Wind</div><div class="cond-value">${windKt.toFixed(0)} kt</div><div class="cond-unit">${windArrow}from ${deg2comp(windDir)}</div><div class="cond-sub">gusts ${gustKt.toFixed(0)} kt</div></div>
       ${sstF?`<div class="cond-cell"><div class="cond-label">Sea surface temp</div><div class="cond-value">${sstF}°</div><div class="cond-unit">Fahrenheit</div></div>`:''}
-    </div>`;
+    </div>
+    <p style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-faint);margin:18px 0 4px;">Hourly wave forecast</p>
+    ${waveHourly(hi)}`;
 }
 
 function renderFishing(hi) {
@@ -416,11 +438,35 @@ function renderFishing(hi) {
   const trend=pressureTrend(wh.surface_pressure,hi);
   const pressInHg=(wh.surface_pressure[hi]*0.02953).toFixed(2);
   const uv=wh.uv_index?.[hi]??null, uvI=uv!=null?uvNote(uv):null;
+  const cloud=wh.cloudcover?.[hi]??null, wcode=wh.weathercode?.[hi]??0;
   const precip=wh.precipitation_probability[hi]??0, precipAmt=wh.precipitation[hi]??0;
-  const rainSlice=Array.from({length:8},(_,i)=>({pct:wh.precipitation_probability[Math.min(hi+i,wh.precipitation_probability.length-1)]??0,label:`+${i}h`}));
+
+  // Sky conditions from WMO weather code
+  const skyInfo = (() => {
+    if (wcode>=95) return {icon:'⚡',label:'Thunderstorm',cls:'factor-bad',note:'Lightning risk — do not go offshore'};
+    if (wcode===45||wcode===48) return {icon:'🌫',label:'Fog',cls:'factor-bad',note:'Reduced visibility — navigate with caution'};
+    if (wcode>=80) return {icon:'🌧',label:'Rain showers',cls:'factor-mid',note:'Active showers — waterproof gear advised'};
+    if (wcode>=51) return {icon:'🌦',label:'Drizzle',cls:'factor-mid',note:'Light precipitation, reduced surface visibility'};
+    if (cloud!=null && cloud<25) return {icon:'☀️',label:`Clear (${cloud}%)`,cls:'factor-good',note:'Great visibility — sunscreen and shade required'};
+    if (cloud!=null && cloud<60) return {icon:'⛅',label:`Partly cloudy (${cloud}%)`,cls:'factor-good',note:'Overcast reduces glare — fish feed more actively near surface'};
+    return {icon:'☁️',label:`Overcast${cloud!=null?' ('+cloud+'%)':''}`,cls:'factor-mid',note:'Low UV — fish likely active near surface'};
+  })();
+
+  // Rain SVG chart (8 hours, +3h highlighted)
+  const rainSlice=Array.from({length:8},(_,i)=>({pct:wh.precipitation_probability[Math.min(hi+i,wh.precipitation_probability.length-1)]??0,label:i===0?'now':'+'+i+'h'}));
   const maxP=Math.max(...rainSlice.map(r=>r.pct),1);
-  const bars=rainSlice.map(r=>`<div class="rain-bar" style="height:${Math.round(r.pct/maxP*32)+2}px;opacity:${(0.35+r.pct/100*0.65).toFixed(2)};"></div>`).join('');
-  const lbls=rainSlice.map(r=>`<div class="rain-label">${r.label}</div>`).join('');
+  const svgH=44, svgW=180, bw=svgW/8, gap=2;
+  const rainBars=rainSlice.map((r,i)=>{
+    const bh=Math.max(Math.round(r.pct/100*(svgH-14)),1);
+    const x=i*bw+gap/2, bwI=bw-gap;
+    const col=i===0?'#8a6f3a':i===3?'#5a8faa':'#8aadca';
+    const op=(0.35+r.pct/100*0.65).toFixed(2);
+    const pctLbl=r.pct>0?`<text x="${(x+bwI/2).toFixed(1)}" y="${(svgH-14-bh-2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#5a5a5a">${r.pct}%</text>`:'';
+    return `<rect x="${x.toFixed(1)}" y="${(svgH-14-bh).toFixed(1)}" width="${bwI.toFixed(1)}" height="${bh}" fill="${col}" opacity="${op}" rx="1"/>
+    ${pctLbl}<text x="${(x+bwI/2).toFixed(1)}" y="${svgH-1}" text-anchor="middle" font-size="7.5" fill="${i===3?'#5a8faa':'#8a8275'}" font-weight="${i===3?'500':'400'}">${r.label}</text>`;
+  }).join('');
+  const rainSvg=`<svg width="100%" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block;" preserveAspectRatio="none">${rainBars}</svg>`;
+
   const pills=sol.map(s=>`<span class="solunar-pill ${s.type==='minor'?'minor':''}">${s.label} ${s.time}</span>`).join('');
   document.getElementById('fishing-content').innerHTML=`
     <div class="factors-grid">
@@ -432,9 +478,13 @@ function renderFishing(hi) {
       <div class="factor-card">
         <div class="factor-title">Rainfall next 8 hours</div>
         <div class="factor-value" style="font-size:17px;">${precip}% chance</div>
-        <div class="rain-bars">${bars}</div>
-        <div class="rain-labels">${lbls}</div>
-        <div class="factor-note" style="margin-top:4px;">${precipAmt>0.1?precipAmt.toFixed(1)+' mm expected':'No precipitation expected'}</div>
+        <div class="rain-chart">${rainSvg}</div>
+        <div class="factor-note">${precipAmt>0.1?precipAmt.toFixed(1)+' mm expected':'No precipitation expected'} &nbsp;·&nbsp; +3h highlighted</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-title">Sky conditions</div>
+        <div class="factor-value" style="font-size:16px;">${skyInfo.icon} ${skyInfo.label}</div>
+        <div class="factor-note"><span class="${skyInfo.cls}">${skyInfo.note}</span></div>
       </div>
       <div class="factor-card">
         <div class="factor-title">Moon phase</div>
@@ -449,7 +499,7 @@ function renderFishing(hi) {
       </div>
       <div class="factor-card">
         <div class="factor-title">Tides · ${activeLoc.label}</div>
-        ${tideData && tideData.predictions ? tideData.predictions.map(p=>`<div class="tide-row">${p.type==='H'?'↑ High':'↓ Low'} ${parseFloat(p.v).toFixed(1)} ft &nbsp;·&nbsp; ${fmtTideTime(p.t)}</div>`).join('') : '<div class="tide-row" style="color:var(--ink-faint);font-size:12px;">No tide data available</div>'}
+        ${tideData && tideData.predictions ? tideData.predictions.map(p=>`<div class="tide-row">${p.type==='H'?'↑ High':'↓ Low'} ${parseFloat(p.v).toFixed(1)} ft &nbsp;·&nbsp; ${fmtTideTime(p.t)}</div>`).join('') : '<div class="tide-row" style="color:var(--ink-faint);font-size:12px;">Tide data unavailable</div>'}
         <div class="factor-note" style="margin-top:6px;">NOAA predictions · MLLW</div>
       </div>
       ${uvI?`<div class="factor-card"><div class="factor-title">UV index</div><div class="factor-value">${Math.round(uv)}</div><div class="factor-note"><span class="${uvI.cls}">${uvI.note}</span></div></div>`:''}
@@ -489,7 +539,7 @@ function render() {
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
 const CACHE_TTL = 30 * 60 * 1000;
-function cacheKey(lat, lon) { return `offshore_${lat}_${lon}`; }
+function cacheKey(lat, lon) { return `offshore_v3_${lat}_${lon}`; } // bump version to invalidate old cache
 function cacheGet(lat, lon) {
   try {
     const raw = localStorage.getItem(cacheKey(lat, lon));
@@ -535,11 +585,15 @@ async function fetchData() {
   marineData=null; weatherData=null; tideData=null;
   const {lat,lon,tide}=activeLoc;
   const cached = cacheGet(lat, lon);
-  if (cached) { marineData=cached.marine; weatherData=cached.weather; tideData=cached.tides; render(); return; }
+  if (cached) {
+    marineData=cached.marine; weatherData=cached.weather; tideData=cached.tides;
+    if (!tideData) { fetchTides(tide).then(t=>{ tideData=t; if(t) cacheSet(lat,lon,marineData,weatherData,t); render(); }); }
+    render(); return;
+  }
   try {
     const [mRes,wRes,tides]=await Promise.all([
-      fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,sea_surface_temperature&forecast_days=7&timezone=America%2FNew_York`),
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms`),
+      fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,wind_wave_height,wind_wave_period,sea_surface_temperature&forecast_days=7&timezone=America%2FNew_York`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index,cloudcover,weathercode&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms`),
       fetchTides(tide),
     ]);
     if (!mRes.ok||!wRes.ok) throw new Error(`HTTP ${mRes.status}/${wRes.status}`);
