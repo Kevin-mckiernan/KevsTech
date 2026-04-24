@@ -77,6 +77,7 @@
 
   .factors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
   .factor-card { background: var(--surface); padding: 15px 17px; border-radius: 2px; }
+  .tide-row { font-size: 13px; color: var(--ink-soft); line-height: 1.9; }
   .factor-title { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 7px; }
   .factor-value { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--ink); margin-bottom: 3px; line-height: 1.2; }
   .factor-note { font-size: 12px; color: var(--ink-muted); line-height: 1.4; }
@@ -243,38 +244,38 @@
 // Coords are set ~10-15 NM offshore of each port
 const LOCATIONS = {
   atlantic: [
-    { id: 'fernandina',  label: 'Fernandina Beach',      lat: 30.85, lon: -81.20, noaa: 'AMZ410' },
-    { id: 'jacksonville',label: 'Jacksonville Beach',     lat: 30.28, lon: -81.20, noaa: 'AMZ420' },
-    { id: 'staugustine', label: 'St. Augustine',          lat: 29.85, lon: -81.15, noaa: 'AMZ450' },
-    { id: 'daytona',     label: 'Ponce Inlet',            lat: 29.05, lon: -80.85, noaa: 'AMZ530' },
-    { id: 'canaveral',   label: 'Port Canaveral',         lat: 28.40, lon: -80.55, noaa: 'AMZ550' },
-    { id: 'fortpierce',  label: 'Fort Pierce',            lat: 27.40, lon: -79.90, noaa: 'AMZ610' },
-    { id: 'palmbeach',   label: 'Palm Beach',             lat: 26.70, lon: -79.80, noaa: 'AMZ630' },
-    { id: 'miami',       label: 'Miami / Haulover',       lat: 25.85, lon: -79.85, noaa: 'AMZ650' },
+    { id: 'fernandina',  label: 'Fernandina Beach',      lat: 30.85, lon: -81.20, noaa: 'AMZ410', tide: '8720030' },
+    { id: 'jacksonville',label: 'Jacksonville Beach',     lat: 30.28, lon: -81.20, noaa: 'AMZ420', tide: '8720218' },
+    { id: 'staugustine', label: 'St. Augustine',          lat: 29.85, lon: -81.15, noaa: 'AMZ450', tide: '8720587' },
+    { id: 'daytona',     label: 'Ponce Inlet',            lat: 29.05, lon: -80.85, noaa: 'AMZ530', tide: '8721604' },
+    { id: 'canaveral',   label: 'Port Canaveral',         lat: 28.40, lon: -80.55, noaa: 'AMZ550', tide: '8721120' },
+    { id: 'fortpierce',  label: 'Fort Pierce',            lat: 27.40, lon: -79.90, noaa: 'AMZ610', tide: '8722208' },
+    { id: 'palmbeach',   label: 'Palm Beach',             lat: 26.70, lon: -79.80, noaa: 'AMZ630', tide: '8722588' },
+    { id: 'miami',       label: 'Miami / Haulover',       lat: 25.85, lon: -79.85, noaa: 'AMZ650', tide: '8723214' },
   ],
   keys: [
-    { id: 'keylargo',    label: 'Key Largo',              lat: 25.10, lon: -80.25, noaa: 'GMZ830' },
-    { id: 'islamorada',  label: 'Islamorada',             lat: 24.85, lon: -80.60, noaa: 'GMZ830' },
-    { id: 'marathon',    label: 'Marathon',               lat: 24.60, lon: -81.10, noaa: 'GMZ830' },
-    { id: 'keywest',     label: 'Key West',               lat: 24.45, lon: -81.95, noaa: 'GMZ830' },
+    { id: 'keylargo',    label: 'Key Largo',              lat: 25.10, lon: -80.25, noaa: 'GMZ830', tide: '8723970' },
+    { id: 'islamorada',  label: 'Islamorada',             lat: 24.85, lon: -80.60, noaa: 'GMZ830', tide: '8724316' },
+    { id: 'marathon',    label: 'Marathon',               lat: 24.60, lon: -81.10, noaa: 'GMZ830', tide: '8724156' },
+    { id: 'keywest',     label: 'Key West',               lat: 24.45, lon: -81.95, noaa: 'GMZ830', tide: '8724580' },
   ],
   gulf: [
-    { id: 'naples',      label: 'Naples / Marco',         lat: 25.85, lon: -82.00, noaa: 'GMZ750' },
-    { id: 'fortmyers',   label: 'Fort Myers Beach',       lat: 26.40, lon: -82.40, noaa: 'GMZ730' },
-    { id: 'sarasota',    label: 'Sarasota / Venice',      lat: 27.00, lon: -82.90, noaa: 'GMZ656' },
-    { id: 'tampa',       label: 'Tampa Bay / St. Pete',   lat: 27.55, lon: -82.95, noaa: 'GMZ636' },
-    { id: 'tarpon',      label: 'Tarpon Springs',         lat: 28.20, lon: -83.10, noaa: 'GMZ632' },
-    { id: 'crystal',     label: 'Crystal River',          lat: 28.80, lon: -83.30, noaa: 'GMZ530' },
-    { id: 'panamacity',  label: 'Panama City Beach',      lat: 30.05, lon: -85.95, noaa: 'GMZ435' },
-    { id: 'destin',      label: 'Destin / Fort Walton',   lat: 30.30, lon: -86.50, noaa: 'GMZ432' },
-    { id: 'pensacola',   label: 'Pensacola',              lat: 30.10, lon: -87.40, noaa: 'GMZ430' },
+    { id: 'naples',      label: 'Naples / Marco',         lat: 25.85, lon: -82.00, noaa: 'GMZ750', tide: '8725110' },
+    { id: 'fortmyers',   label: 'Fort Myers Beach',       lat: 26.40, lon: -82.40, noaa: 'GMZ730', tide: '8725520' },
+    { id: 'sarasota',    label: 'Sarasota / Venice',      lat: 27.00, lon: -82.90, noaa: 'GMZ656', tide: '8726384' },
+    { id: 'tampa',       label: 'Tampa Bay / St. Pete',   lat: 27.55, lon: -82.95, noaa: 'GMZ636', tide: '8726520' },
+    { id: 'tarpon',      label: 'Tarpon Springs',         lat: 28.20, lon: -83.10, noaa: 'GMZ632', tide: '8726678' },
+    { id: 'crystal',     label: 'Crystal River',          lat: 28.80, lon: -83.30, noaa: 'GMZ530', tide: '8727359' },
+    { id: 'panamacity',  label: 'Panama City Beach',      lat: 30.05, lon: -85.95, noaa: 'GMZ435', tide: '8729108' },
+    { id: 'destin',      label: 'Destin / Fort Walton',   lat: 30.30, lon: -86.50, noaa: 'GMZ432', tide: '8729210' },
+    { id: 'pensacola',   label: 'Pensacola',              lat: 30.10, lon: -87.40, noaa: 'GMZ430', tide: '8729840' },
   ],
 };
 
 // State
 let activeLoc  = LOCATIONS.atlantic.find(l => l.id === 'staugustine');
 let boatLength = 24;
-let marineData = null, weatherData = null;
+let marineData = null, weatherData = null, tideData = null;
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 const mToFt    = m => m * 3.28084;
@@ -333,7 +334,12 @@ function solunarTimes(date) {
   const { phase } = moonPhase(date);
   const lunation  = (phase / 29.53058867) * 24;
   const mh1 = ((12 - lunation*(24/29.53)) % 24 + 24) % 24;
-  const fmt = h => { const hh=Math.floor(h),mm=Math.round((h-hh)*60)%60,ap=hh>=12?'pm':'am'; return `${hh===0?12:hh>12?hh-12:hh}:${mm.toString().padStart(2,'0')} ${ap}`; };
+  const tzOff = -date.getTimezoneOffset() / 60;
+  const fmt = h => {
+    const lh = ((h + tzOff) % 24 + 24) % 24;
+    const hh=Math.floor(lh), mm=Math.round((lh-hh)*60)%60, ap=hh>=12?'pm':'am';
+    return `${hh===0?12:hh>12?hh-12:hh}:${mm.toString().padStart(2,'0')} ${ap}`;
+  };
   return [
     {time:fmt(mh1),          type:'major', label:'Major bite'},
     {time:fmt((mh1+12.4)%24),type:'major', label:'Major bite'},
@@ -353,7 +359,12 @@ function sunTimes(date, lat, lon) {
   if (Math.abs(cosH)>1) return {rise:'--',set:'--'};
   const H=Math.acos(cosH)/rad;
   const tr=(180-lon-(Math.atan2(Math.sin(lam),Math.cos(lam)*Math.sin(23.45*rad))/rad))/360+J;
-  const toT=jd=>{const hrs=((jd+0.5)%1)*24,h=Math.floor(hrs)%24,m=Math.round((hrs-Math.floor(hrs))*60)%60;return `${h===0?12:h>12?h-12:h}:${m.toString().padStart(2,'0')} ${h>=12?'pm':'am'}`;};
+  const tzOff = -date.getTimezoneOffset() / 60; // convert UTC to local (ET: -4 EDT / -5 EST)
+  const toT=jd=>{
+    const utcH=((jd+0.5)%1)*24, localH=((utcH+tzOff)%24+24)%24;
+    const h=Math.floor(localH), m=Math.round((localH-h)*60)%60;
+    return `${h===0?12:h>12?h-12:h}:${m.toString().padStart(2,'0')} ${h>=12?'pm':'am'}`;
+  };
   return {rise:toT(tr-H/360),set:toT(tr+H/360)};
 }
 
@@ -436,8 +447,13 @@ function renderFishing(hi) {
         <div class="factor-value" style="font-size:14px;line-height:1.7;">↑ ${sun.rise}<br>↓ ${sun.set}</div>
         <div class="factor-note">Prime windows at dawn and dusk</div>
       </div>
+      <div class="factor-card">
+        <div class="factor-title">Tides · ${activeLoc.label}</div>
+        ${tideData && tideData.predictions ? tideData.predictions.map(p=>`<div class="tide-row">${p.type==='H'?'↑ High':'↓ Low'} ${parseFloat(p.v).toFixed(1)} ft &nbsp;·&nbsp; ${fmtTideTime(p.t)}</div>`).join('') : '<div class="tide-row" style="color:var(--ink-faint);font-size:12px;">No tide data available</div>'}
+        <div class="factor-note" style="margin-top:6px;">NOAA predictions · MLLW</div>
+      </div>
       ${uvI?`<div class="factor-card"><div class="factor-title">UV index</div><div class="factor-value">${Math.round(uv)}</div><div class="factor-note"><span class="${uvI.cls}">${uvI.note}</span></div></div>`:''}
-      <div class="factor-card" style="${uvI?'':'grid-column:span 2;'}">
+      <div class="factor-card" style="${uvI?'grid-column:span 2':''}">
         <div class="factor-title">Solunar bite windows</div>
         <div class="solunar-row">${pills}</div>
         <div class="factor-note" style="margin-top:9px;">Major = peak feeding · Minor = secondary window</div>
@@ -478,13 +494,37 @@ function cacheGet(lat, lon) {
   try {
     const raw = localStorage.getItem(cacheKey(lat, lon));
     if (!raw) return null;
-    const { ts, marine, weather } = JSON.parse(raw);
+    const { ts, marine, weather, tides } = JSON.parse(raw);
     if (Date.now() - ts > CACHE_TTL) return null;
-    return { marine, weather };
+    return { marine, weather, tides: tides ?? null };
   } catch { return null; }
 }
-function cacheSet(lat, lon, marine, weather) {
-  try { localStorage.setItem(cacheKey(lat, lon), JSON.stringify({ ts: Date.now(), marine, weather })); } catch {}
+function cacheSet(lat, lon, marine, weather, tides) {
+  try { localStorage.setItem(cacheKey(lat, lon), JSON.stringify({ ts: Date.now(), marine, weather, tides })); } catch {}
+}
+
+// ── Tides ─────────────────────────────────────────────────────────────────────
+async function fetchTides(stationId) {
+  if (!stationId) return null;
+  const now = new Date();
+  const yr = now.getFullYear();
+  const mo = String(now.getMonth()+1).padStart(2,'0');
+  const dy = String(now.getDate()).padStart(2,'0');
+  const dateStr = `${yr}${mo}${dy}`;
+  try {
+    const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=${stationId}&begin_date=${dateStr}&end_date=${dateStr}&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kevstech&format=json`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    return (d.error || !d.predictions) ? null : d;
+  } catch { return null; }
+}
+
+function fmtTideTime(t) {
+  const time = t.split(' ')[1];
+  const [h, m] = time.split(':').map(Number);
+  const ap = h >= 12 ? 'pm' : 'am';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${String(m).padStart(2,'0')} ${ap}`;
 }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
@@ -492,18 +532,19 @@ async function fetchData() {
   ['today-content','fishing-content','week-content'].forEach(id=>{
     document.getElementById(id).innerHTML='<div class="loading">Fetching conditions…</div>';
   });
-  marineData=null; weatherData=null;
-  const {lat,lon}=activeLoc;
+  marineData=null; weatherData=null; tideData=null;
+  const {lat,lon,tide}=activeLoc;
   const cached = cacheGet(lat, lon);
-  if (cached) { marineData=cached.marine; weatherData=cached.weather; render(); return; }
+  if (cached) { marineData=cached.marine; weatherData=cached.weather; tideData=cached.tides; render(); return; }
   try {
-    const [mRes,wRes]=await Promise.all([
+    const [mRes,wRes,tides]=await Promise.all([
       fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,sea_surface_temperature&forecast_days=7&timezone=America%2FNew_York`),
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms`)
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms`),
+      fetchTides(tide),
     ]);
     if (!mRes.ok||!wRes.ok) throw new Error(`HTTP ${mRes.status}/${wRes.status}`);
-    marineData=await mRes.json(); weatherData=await wRes.json();
-    cacheSet(lat, lon, marineData, weatherData);
+    marineData=await mRes.json(); weatherData=await wRes.json(); tideData=tides;
+    cacheSet(lat, lon, marineData, weatherData, tideData);
     render();
   } catch(e) {
     ['today-content','fishing-content','week-content'].forEach(id=>{
