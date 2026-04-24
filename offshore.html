@@ -207,17 +207,17 @@
           <div class="threshold-row">Marginal <span class="t-marginal">2–3×</span></div>
           <div class="threshold-row">No-go <span class="t-nogo">&lt; 2×</span></div>
         </div>
-        <div class="threshold-card">
+        <div class="threshold-card" id="thresh-wave">
           <div class="threshold-title">Wave vs. boat length</div>
-          <div class="threshold-row">Go <span class="t-go">&lt; 20%</span></div>
-          <div class="threshold-row">Marginal <span class="t-marginal">20–30%</span></div>
-          <div class="threshold-row">No-go <span class="t-nogo">&gt; 30%</span></div>
+          <div class="threshold-row">Go <span class="t-go" id="t-wave-go"></span></div>
+          <div class="threshold-row">Marginal <span class="t-marginal" id="t-wave-marg"></span></div>
+          <div class="threshold-row">No-go <span class="t-nogo" id="t-wave-nogo"></span></div>
         </div>
-        <div class="threshold-card">
+        <div class="threshold-card" id="thresh-wind">
           <div class="threshold-title">Wind speed</div>
-          <div class="threshold-row">Go <span class="t-go">&lt; 10 kt</span></div>
-          <div class="threshold-row">Marginal <span class="t-marginal">10–15 kt</span></div>
-          <div class="threshold-row">No-go <span class="t-nogo">&gt; 15 kt</span></div>
+          <div class="threshold-row">Go <span class="t-go" id="t-wind-go"></span></div>
+          <div class="threshold-row">Marginal <span class="t-marginal" id="t-wind-marg"></span></div>
+          <div class="threshold-row">No-go <span class="t-nogo" id="t-wind-nogo"></span></div>
         </div>
         <div class="threshold-card">
           <div class="threshold-title">Pressure trend</div>
@@ -282,18 +282,40 @@ const mpsToKt  = m => m * 1.94384;
 const deg2comp = d => ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];
 const DAYS     = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+function getThresholds(len) {
+  if (len <= 19) return { wMarg:  8, wNogo: 12, hMarg: 0.16, hNogo: 0.24 };
+  if (len <= 23) return { wMarg:  9, wNogo: 13, hMarg: 0.18, hNogo: 0.27 };
+  if (len <= 26) return { wMarg: 10, wNogo: 15, hMarg: 0.20, hNogo: 0.30 };
+  if (len <= 29) return { wMarg: 12, wNogo: 17, hMarg: 0.22, hNogo: 0.33 };
+  if (len <= 35) return { wMarg: 13, wNogo: 19, hMarg: 0.25, hNogo: 0.36 };
+  return               { wMarg: 15, wNogo: 22, hMarg: 0.28, hNogo: 0.40 };
+}
+
 function classify(waveFt, period, windKt) {
   const pr = period / waveFt, lp = waveFt / boatLength;
+  const { wMarg, wNogo, hMarg, hNogo } = getThresholds(boatLength);
   let score = 'go', reasons = [];
-  if      (pr < 2)    { score = 'nogo';                       reasons.push(`very short period (${pr.toFixed(1)}×)`); }
-  else if (pr < 3)    { if (score!=='nogo') score='marginal'; reasons.push(`short period (${pr.toFixed(1)}×)`); }
-  if      (lp > 0.30) { score = 'nogo';                       reasons.push(`waves ${Math.round(lp*100)}% of LOA`); }
-  else if (lp > 0.20) { if (score!=='nogo') score='marginal'; reasons.push(`waves ${Math.round(lp*100)}% of LOA`); }
-  if      (windKt>15) { score = 'nogo';                       reasons.push(`wind ${windKt.toFixed(0)} kt`); }
-  else if (windKt>10) { if (score!=='nogo') score='marginal'; reasons.push(`wind ${windKt.toFixed(0)} kt`); }
+  if      (pr < 2)      { score = 'nogo';                        reasons.push(`very short period (${pr.toFixed(1)}×)`); }
+  else if (pr < 3)      { if (score!=='nogo') score='marginal';  reasons.push(`short period (${pr.toFixed(1)}×)`); }
+  if      (lp > hNogo)  { score = 'nogo';                        reasons.push(`waves too large for your boat`); }
+  else if (lp > hMarg)  { if (score!=='nogo') score='marginal';  reasons.push(`waves borderline for your boat`); }
+  if      (windKt>wNogo){ score = 'nogo';                        reasons.push(`wind ${windKt.toFixed(0)} kt`); }
+  else if (windKt>wMarg){ if (score!=='nogo') score='marginal';  reasons.push(`wind ${windKt.toFixed(0)} kt`); }
   return { score, reasons };
 }
 const statusLabel = s => ({go:'Go',marginal:'Marginal',nogo:'No-go'}[s]);
+
+function updateThresholdCards() {
+  const { wMarg, wNogo, hMarg, hNogo } = getThresholds(boatLength);
+  const waveGo = (boatLength * hMarg).toFixed(1);
+  const waveMarg = (boatLength * hNogo).toFixed(1);
+  document.getElementById('t-wave-go').textContent   = `< ${waveGo} ft`;
+  document.getElementById('t-wave-marg').textContent = `${waveGo}–${waveMarg} ft`;
+  document.getElementById('t-wave-nogo').textContent = `> ${waveMarg} ft`;
+  document.getElementById('t-wind-go').textContent   = `< ${wMarg} kt`;
+  document.getElementById('t-wind-marg').textContent = `${wMarg}–${wNogo} kt`;
+  document.getElementById('t-wind-nogo').textContent = `> ${wNogo} kt`;
+}
 
 // ── Moon ──────────────────────────────────────────────────────────────────────
 function moonPhase(date) {
@@ -515,11 +537,13 @@ document.querySelectorAll('.boat-btn').forEach(btn=>{
     document.querySelectorAll('.boat-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     boatLength=parseInt(btn.dataset.length);
+    updateThresholdCards();
     render();
   });
 });
 
 buildLocButtons();
+updateThresholdCards();
 fetchData();
 </script>
 </body>
