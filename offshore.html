@@ -389,7 +389,7 @@ function findHourIdx(times) {
 function waveHourly(hi) {
   const mh=marineData.hourly, wh=weatherData.hourly, times=mh.time;
   const cells=[];
-  for (let i=hi; i<Math.min(hi+12, times.length); i++) {
+  for (let i=hi; i<Math.min(hi+24, times.length); i++) {
     const hr=parseInt(times[i].split('T')[1]);
     const ap=hr>=12?'pm':'am', h12=hr===0?12:hr>12?hr-12:hr;
     const waveFt=mToFt(mh.wave_height[i]), period=mh.wave_period[i];
@@ -415,7 +415,7 @@ function renderToday(hi) {
     marginal: 'Conditions are borderline — passable but use caution.',
     nogo:     'Conditions exceed safe limits for your boat size.'
   };
-  const windArrow = `<svg width="13" height="13" viewBox="0 0 14 14" style="transform:rotate(${windDir}deg);vertical-align:-1px;margin-right:3px;"><path d="M7 1 L4 11 L7 8.5 L10 11 Z" fill="currentColor"/></svg>`;
+  const windArrow = `<svg width="13" height="13" viewBox="0 0 14 14" style="transform:rotate(${(windDir+180)%360}deg);vertical-align:-1px;margin-right:3px;"><path d="M7 1 L4 11 L7 8.5 L10 11 Z" fill="currentColor"/></svg>`;
   const swellSub = swellFt>0.1 ? `<div class="cond-sub">swell ${swellFt.toFixed(1)} ft / ${swellPer.toFixed(0)}s</div><div class="cond-sub">chop ${windWaveFt.toFixed(1)} ft / ${windWavePer.toFixed(0)}s</div>` : '';
   document.getElementById('today-content').innerHTML=`
     <div class="status-block">
@@ -452,20 +452,23 @@ function renderFishing(hi) {
     return {icon:'☁️',label:`Overcast${cloud!=null?' ('+cloud+'%)':''}`,cls:'factor-mid',note:'Low UV — fish likely active near surface'};
   })();
 
-  // Rain SVG chart (8 hours, +3h highlighted)
-  const rainSlice=Array.from({length:8},(_,i)=>({pct:wh.precipitation_probability[Math.min(hi+i,wh.precipitation_probability.length-1)]??0,label:i===0?'now':'+'+i+'h'}));
+  // Rain HTML chart (8 hours, +3h highlighted)
+  const rainSlice=Array.from({length:8},(_,i)=>({pct:wh.precipitation_probability[Math.min(hi+i,wh.precipitation_probability.length-1)]??0,idx:i}));
   const maxP=Math.max(...rainSlice.map(r=>r.pct),1);
-  const svgH=44, svgW=180, bw=svgW/8, gap=2;
-  const rainBars=rainSlice.map((r,i)=>{
-    const bh=Math.max(Math.round(r.pct/100*(svgH-14)),1);
-    const x=i*bw+gap/2, bwI=bw-gap;
-    const col=i===0?'#8a6f3a':i===3?'#5a8faa':'#8aadca';
-    const op=(0.35+r.pct/100*0.65).toFixed(2);
-    const pctLbl=r.pct>0?`<text x="${(x+bwI/2).toFixed(1)}" y="${(svgH-14-bh-2).toFixed(1)}" text-anchor="middle" font-size="7" fill="#5a5a5a">${r.pct}%</text>`:'';
-    return `<rect x="${x.toFixed(1)}" y="${(svgH-14-bh).toFixed(1)}" width="${bwI.toFixed(1)}" height="${bh}" fill="${col}" opacity="${op}" rx="1"/>
-    ${pctLbl}<text x="${(x+bwI/2).toFixed(1)}" y="${svgH-1}" text-anchor="middle" font-size="7.5" fill="${i===3?'#5a8faa':'#8a8275'}" font-weight="${i===3?'500':'400'}">${r.label}</text>`;
+  const rainBars=rainSlice.map(({pct,idx})=>{
+    const bh=Math.max(Math.round(pct/100*36),2);
+    const col=idx===0?'var(--accent)':idx===3?'#5a8faa':'#8aadca';
+    const op=(0.4+pct/100*0.6).toFixed(2);
+    const lbl=idx===0?'now':`+${idx}h`;
+    const lblCol=idx===3?'#5a8faa':'var(--ink-faint)';
+    const pctTxt=pct>0?`<div style="font-size:8px;color:var(--ink-muted);text-align:center;line-height:1.2;margin-bottom:1px;">${pct}%</div>`:'<div style="font-size:8px;line-height:1.2;margin-bottom:1px;">&nbsp;</div>';
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      ${pctTxt}
+      <div style="width:100%;background:${col};border-radius:1px 1px 0 0;height:${bh}px;opacity:${op};min-height:2px;"></div>
+      <div style="font-size:8px;color:${lblCol};font-weight:${idx===3?600:400};margin-top:3px;white-space:nowrap;">${lbl}</div>
+    </div>`;
   }).join('');
-  const rainSvg=`<svg width="100%" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block;" preserveAspectRatio="none">${rainBars}</svg>`;
+  const rainSvg=`<div style="display:flex;gap:2px;align-items:flex-end;margin:8px 0 0;">${rainBars}</div>`;
 
   const pills=sol.map(s=>`<span class="solunar-pill ${s.type==='minor'?'minor':''}">${s.label} ${s.time}</span>`).join('');
   document.getElementById('fishing-content').innerHTML=`
@@ -478,8 +481,8 @@ function renderFishing(hi) {
       <div class="factor-card">
         <div class="factor-title">Rainfall next 8 hours</div>
         <div class="factor-value" style="font-size:17px;">${precip}% chance</div>
-        <div class="rain-chart">${rainSvg}</div>
-        <div class="factor-note">${precipAmt>0.1?precipAmt.toFixed(1)+' mm expected':'No precipitation expected'} &nbsp;·&nbsp; +3h highlighted</div>
+        ${rainSvg}
+        <div class="factor-note" style="margin-top:6px;">${precipAmt>0.1?precipAmt.toFixed(1)+' mm expected':'No precipitation expected'} &nbsp;·&nbsp; <span style="color:#5a8faa;">+3h in blue</span></div>
       </div>
       <div class="factor-card">
         <div class="factor-title">Sky conditions</div>
@@ -503,7 +506,7 @@ function renderFishing(hi) {
         <div class="factor-note" style="margin-top:6px;">NOAA predictions · MLLW</div>
       </div>
       ${uvI?`<div class="factor-card"><div class="factor-title">UV index</div><div class="factor-value">${Math.round(uv)}</div><div class="factor-note"><span class="${uvI.cls}">${uvI.note}</span></div></div>`:''}
-      <div class="factor-card" style="${uvI?'grid-column:span 2':''}">
+      <div class="factor-card" style="${uvI?'':'grid-column:span 2'}">
         <div class="factor-title">Solunar bite windows</div>
         <div class="solunar-row">${pills}</div>
         <div class="factor-note" style="margin-top:9px;">Major = peak feeding · Minor = secondary window</div>
