@@ -433,10 +433,11 @@ function renderWeek() {
     const isToday=d.toISOString().slice(0,10)===todayUTCDate;
     const idx=isToday?hi:i;
     const waveFt=mToFt(marineData.hourly.wave_height[idx]), period=marineData.hourly.wave_period[idx];
-    const windKt=mpsToKt(weatherData.hourly.windspeed_10m[idx]), rain=weatherData.hourly.precipitation_probability[idx]??0;
+    const windKt=mpsToKt(weatherData.hourly.windspeed_10m[idx]), windDir=weatherData.hourly.winddirection_10m[idx], gustKt=mpsToKt(weatherData.hourly.windgusts_10m[idx]), rain=weatherData.hourly.precipitation_probability[idx]??0;
     const {score}=classify(waveFt,period,windKt);
     const pTrend=pressureTrend(weatherData.hourly.surface_pressure,idx);
-    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}${isToday?' <span style="font-size:8px;opacity:.7">now</span>':''}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${rain}% rain</div><div class="day-pressure">${pTrend.arrow} ${pTrend.label}</div></div>`;
+    const wArrow=`<svg width="10" height="10" viewBox="0 0 14 14" style="transform:rotate(${windDir}deg);vertical-align:-1px;"><path d="M7 1 L4 11 L7 8.5 L10 11 Z" fill="currentColor"/></svg>`;
+    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}${isToday?' <span style="font-size:8px;opacity:.7">now</span>':''}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${wArrow} ${windKt.toFixed(0)} kt</div><div class="day-pressure">${pTrend.arrow} ${pTrend.label}</div></div>`;
   }).join('');
   document.getElementById('week-content').innerHTML=`<div class="week-strip">${cells}</div>`;
   document.getElementById('updated-at').textContent=`Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Open-Meteo · coords ${activeLoc.lat}°N ${Math.abs(activeLoc.lon)}°W`;
