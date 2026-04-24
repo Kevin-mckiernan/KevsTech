@@ -298,6 +298,7 @@ const LOCATIONS = {
 let activeLoc  = LOCATIONS.atlantic.find(l => l.id === 'staugustine');
 let boatLength = 24;
 let marineData = null, weatherData = null, tideData = null;
+let fetchGen   = 0;
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 const mToFt    = m => m * 3.28084;
@@ -651,6 +652,7 @@ function shiftTideTime(t, hrs) {
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 async function fetchData() {
+  const gen = ++fetchGen;
   ['today-content','fishing-content','week-content','outlook-content'].forEach(id=>{
     document.getElementById(id).innerHTML='<div class="loading">Fetching conditions…</div>';
   });
@@ -658,8 +660,9 @@ async function fetchData() {
   const {lat,lon,tide}=activeLoc;
   const cached = cacheGet(lat, lon);
   if (cached) {
+    if (gen !== fetchGen) return;
     marineData=cached.marine; weatherData=cached.weather; tideData=cached.tides;
-    if (!tideData) { fetchTides(tide).then(t=>{ tideData=t; if(t) cacheSet(lat,lon,marineData,weatherData,t); render(); }); }
+    if (!tideData) { fetchTides(tide).then(t=>{ if (gen !== fetchGen) return; tideData=t; if(t) cacheSet(lat,lon,marineData,weatherData,t); render(); }); }
     render(); return;
   }
   try {
@@ -668,11 +671,13 @@ async function fetchData() {
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=windspeed_10m,winddirection_10m,windgusts_10m,surface_pressure,precipitation_probability,precipitation,uv_index,cloudcover,weathercode,temperature_2m&forecast_days=7&timezone=America%2FNew_York&wind_speed_unit=ms&temperature_unit=fahrenheit`),
       fetchTides(tide),
     ]);
+    if (gen !== fetchGen) return;
     if (!mRes.ok||!wRes.ok) throw new Error(`HTTP ${mRes.status}/${wRes.status}`);
     marineData=await mRes.json(); weatherData=await wRes.json(); tideData=tides;
     cacheSet(lat, lon, marineData, weatherData, tideData);
     render();
   } catch(e) {
+    if (gen !== fetchGen) return;
     ['today-content','fishing-content','week-content','outlook-content'].forEach(id=>{
       document.getElementById(id).innerHTML=`<div class="error-msg">Could not load forecast data. Serve over HTTP — use GitHub Pages or <code>python3 -m http.server 8000</code> locally. (${e.message})</div>`;
     });
