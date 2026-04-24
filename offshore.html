@@ -25,7 +25,7 @@
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
   a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); padding-bottom: 1px; transition: color .15s, border-color .15s; }
   a:hover { color: var(--accent-strong); border-bottom-color: var(--accent-strong); }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 0 32px; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 32px; }
 
   .topbar { padding: 28px 0 0; padding-top: max(28px, env(safe-area-inset-top, 28px)); }
   .topbar-inner { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-faint); letter-spacing: 2px; text-transform: uppercase; }
@@ -100,6 +100,7 @@
   .day-go { background: var(--go-bg); } .day-go .day-status { color: var(--go); }
   .day-marginal { background: var(--marginal-bg); } .day-marginal .day-status { color: var(--marginal); }
   .day-nogo { background: var(--nogo-bg); } .day-nogo .day-status { color: var(--nogo); }
+  .day-pressure { font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
 
   .explainer { border-top: 1px solid var(--rule); padding-top: 22px; margin-bottom: 40px; }
   .explainer h3 { font-family: var(--serif); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
@@ -356,16 +357,22 @@ function renderToday(hi) {
   const sst=mh.sea_surface_temperature?.[hi], sstF=sst!=null?(sst*9/5+32).toFixed(1):null;
   const {score,reasons}=classify(waveFt,period,windKt);
   document.getElementById('active-location-label').textContent = activeLoc.label;
+  const scoreDesc = {
+    go:       'All conditions favorable for your boat size.',
+    marginal: 'Conditions are borderline — passable but use caution.',
+    nogo:     'Conditions exceed safe limits for your boat size.'
+  };
+  const windArrow = `<svg width="13" height="13" viewBox="0 0 14 14" style="transform:rotate(${windDir}deg);vertical-align:-1px;margin-right:3px;"><path d="M7 1 L4 11 L7 8.5 L10 11 Z" fill="currentColor"/></svg>`;
   document.getElementById('today-content').innerHTML=`
     <div class="status-block">
       <div class="status-badge status-${score}"><span class="dot"></span>${statusLabel(score)}</div>
-      <div class="status-reason">${reasons.length?reasons.join(' · '):'All conditions favorable'}</div>
+      <div class="status-reason">${scoreDesc[score]}${reasons.length?' Flagged: '+reasons.join(', ').replace(/\(.*?\)/g,'').trim()+'.':''}</div>
     </div>
     <div class="cond-grid">
       <div class="cond-cell"><div class="cond-label">Wave height</div><div class="cond-value">${waveFt.toFixed(1)}</div><div class="cond-unit">feet</div></div>
       <div class="cond-cell"><div class="cond-label">Wave period</div><div class="cond-value">${period.toFixed(0)}</div><div class="cond-unit">seconds</div><div class="cond-sub">ratio ${(period/waveFt).toFixed(1)}×</div></div>
       <div class="cond-cell"><div class="cond-label">Swell direction</div><div class="cond-value">${deg2comp(wavDir)}</div><div class="cond-unit">${wavDir.toFixed(0)}°</div></div>
-      <div class="cond-cell"><div class="cond-label">Wind</div><div class="cond-value">${windKt.toFixed(0)} kt</div><div class="cond-unit">${deg2comp(windDir)}</div><div class="cond-sub">gusts ${gustKt.toFixed(0)} kt</div></div>
+      <div class="cond-cell"><div class="cond-label">Wind</div><div class="cond-value">${windKt.toFixed(0)} kt</div><div class="cond-unit">${windArrow}from ${deg2comp(windDir)}</div><div class="cond-sub">gusts ${gustKt.toFixed(0)} kt</div></div>
       ${sstF?`<div class="cond-cell"><div class="cond-label">Sea surface temp</div><div class="cond-value">${sstF}°</div><div class="cond-unit">Fahrenheit</div></div>`:''}
     </div>`;
 }
@@ -424,7 +431,8 @@ function renderWeek() {
     const waveFt=mToFt(marineData.hourly.wave_height[i]), period=marineData.hourly.wave_period[i];
     const windKt=mpsToKt(weatherData.hourly.windspeed_10m[i]), rain=weatherData.hourly.precipitation_probability[i]??0;
     const {score}=classify(waveFt,period,windKt);
-    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${rain}% rain</div></div>`;
+    const pTrend=pressureTrend(weatherData.hourly.surface_pressure,i);
+    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${rain}% rain</div><div class="day-pressure">${pTrend.arrow} ${pTrend.label}</div></div>`;
   }).join('');
   document.getElementById('week-content').innerHTML=`<div class="week-strip">${cells}</div>`;
   document.getElementById('updated-at').textContent=`Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Open-Meteo · coords ${activeLoc.lat}°N ${Math.abs(activeLoc.lon)}°W`;
