@@ -426,13 +426,17 @@ function renderFishing(hi) {
 function renderWeek() {
   const times=marineData.hourly.time, seen=new Set(), days=[];
   times.forEach((t,i)=>{const d=new Date(t),ds=d.toISOString().slice(0,10);if(!seen.has(ds)&&d.getUTCHours()===12){seen.add(ds);days.push(i);}});
+  const hi=findHourIdx(times);
+  const todayUTCDate=new Date().toISOString().slice(0,10);
   const cells=days.slice(0,7).map(i=>{
     const d=new Date(times[i]);
-    const waveFt=mToFt(marineData.hourly.wave_height[i]), period=marineData.hourly.wave_period[i];
-    const windKt=mpsToKt(weatherData.hourly.windspeed_10m[i]), rain=weatherData.hourly.precipitation_probability[i]??0;
+    const isToday=d.toISOString().slice(0,10)===todayUTCDate;
+    const idx=isToday?hi:i;
+    const waveFt=mToFt(marineData.hourly.wave_height[idx]), period=marineData.hourly.wave_period[idx];
+    const windKt=mpsToKt(weatherData.hourly.windspeed_10m[idx]), rain=weatherData.hourly.precipitation_probability[idx]??0;
     const {score}=classify(waveFt,period,windKt);
-    const pTrend=pressureTrend(weatherData.hourly.surface_pressure,i);
-    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${rain}% rain</div><div class="day-pressure">${pTrend.arrow} ${pTrend.label}</div></div>`;
+    const pTrend=pressureTrend(weatherData.hourly.surface_pressure,idx);
+    return `<div class="day-cell day-${score}"><div class="day-name">${DAYS[d.getUTCDay()]}${isToday?' <span style="font-size:8px;opacity:.7">now</span>':''}</div><div class="day-status">${statusLabel(score)}</div><div class="day-waves">${waveFt.toFixed(1)} ft<br>${period.toFixed(0)}s</div><div class="day-rain">${rain}% rain</div><div class="day-pressure">${pTrend.arrow} ${pTrend.label}</div></div>`;
   }).join('');
   document.getElementById('week-content').innerHTML=`<div class="week-strip">${cells}</div>`;
   document.getElementById('updated-at').textContent=`Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · Open-Meteo · coords ${activeLoc.lat}°N ${Math.abs(activeLoc.lon)}°W`;
